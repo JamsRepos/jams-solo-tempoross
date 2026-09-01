@@ -1,0 +1,257 @@
+package com.easytempoross;
+
+/**
+ * Client-free happy-path inference from a live snapshot.
+ */
+final class HappyPathPolicy
+{
+	private HappyPathPolicy()
+	{
+	}
+
+	static HappyKind decide(GameSnapshot snap)
+	{
+		if (snap == null)
+		{
+			return HappyKind.IDLE;
+		}
+
+		if (!snap.isInMinigame())
+		{
+			return dock(snap);
+		}
+
+		if (snap.isVictory())
+		{
+			if (snap.getEmptyBuckets() > 0)
+			{
+				return HappyKind.REFILL_DOCK;
+			}
+			return HappyKind.LEAVE_GAME;
+		}
+
+		if (snap.isOnShip() && snap.getEmptyBuckets() > 0 && snap.getTotalFish() == 0
+			&& !snap.isDump16Done())
+		{
+			return HappyKind.FILL_SHIP;
+		}
+
+		if (snap.isOnShip() && snap.getTotalFish() == 0 && !snap.isDump16Done()
+			&& snap.getEmptyBuckets() <= 0
+			&& !snap.isDepositingKeep3() && !snap.isDepositingAll())
+		{
+			return HappyKind.LEAVE_SHIP;
+		}
+
+		if (shouldSpirit(snap))
+		{
+			return HappyKind.SPIRIT;
+		}
+
+		if (snap.isDepositingKeep3() && snap.getDumpableFish() > snap.getDepositKeep3StopAt()
+			&& snap.getRawFish() == 0)
+		{
+			return HappyKind.DEPOSIT_KEEP3;
+		}
+
+		if (snap.isDepositingAll() && snap.getDumpableFish() > snap.getDepositAllStopAt()
+			&& snap.getRawFish() == 0)
+		{
+			return HappyKind.DEPOSIT;
+		}
+
+		if (shouldDepositKeep3(snap))
+		{
+			return HappyKind.DEPOSIT_KEEP3;
+		}
+
+		if (shouldDepositAll(snap))
+		{
+			return HappyKind.DEPOSIT;
+		}
+
+		if (needsDouse(snap))
+		{
+			return HappyKind.DOUSE;
+		}
+
+		if (!snap.isDump16Done() && !snap.isFirstCookDone())
+		{
+			if (snap.getTotalFish() < RotationConstants.FIRST_COOK_AT)
+			{
+				return snap.isDoubleSpotUp() && snap.getNearbyFires() <= 0
+					? HappyKind.FISH_DOUBLE : HappyKind.FISH;
+			}
+			if (snap.isDoubleSpotUp() && snap.getNearbyFires() <= 0)
+			{
+				return HappyKind.FISH_DOUBLE;
+			}
+			if (snap.getRawFish() > 0)
+			{
+				return HappyKind.COOK;
+			}
+		}
+
+		if (snap.getRawFish() > 0 && shouldCook(snap))
+		{
+			return HappyKind.COOK;
+		}
+
+		if (snap.getTotalFish() >= RotationConstants.INVENTORY_TARGET)
+		{
+			if (snap.getRawFish() > 0)
+			{
+				return HappyKind.COOK;
+			}
+			if (!snap.isDump16Done())
+			{
+				return HappyKind.DEPOSIT_KEEP3;
+			}
+			return HappyKind.DEPOSIT;
+		}
+
+		if (snap.isDoubleSpotUp() && snap.getEmptySlots() > 0
+			&& snap.getTotalFish() < RotationConstants.INVENTORY_TARGET
+			&& snap.getNearbyFires() <= 0)
+		{
+			return HappyKind.FISH_DOUBLE;
+		}
+
+		if (snap.getTotalFish() < fishTarget(snap))
+		{
+			return snap.isDoubleSpotUp() && snap.getNearbyFires() <= 0
+				? HappyKind.FISH_DOUBLE : HappyKind.FISH;
+		}
+
+		return HappyKind.FISH;
+	}
+
+	private static HappyKind dock(GameSnapshot snap)
+	{
+		if (!snap.isAtUnkah() && !snap.isHudVisible())
+		{
+			return HappyKind.IDLE;
+		}
+		if (!snap.isHasHarpoon())
+		{
+			return HappyKind.PREP_HARPOON;
+		}
+		if (!snap.isHasRopeOrOutfit())
+		{
+			return HappyKind.PREP_ROPE;
+		}
+		if (!snap.isHasHammer())
+		{
+			return HappyKind.PREP_HAMMER;
+		}
+		if (snap.getBuckets() < RotationConstants.BUCKETS_NEEDED)
+		{
+			return HappyKind.PREP_BUCKETS;
+		}
+		if (snap.getEmptyBuckets() > 0)
+		{
+			return HappyKind.REFILL_DOCK;
+		}
+		return HappyKind.SOLO_START;
+	}
+
+	private static boolean shouldCook(GameSnapshot snap)
+	{
+		if (snap.getRawFish() <= 0)
+		{
+			return false;
+		}
+		if (!snap.isDump16Done() && !snap.isFirstCookDone()
+			&& snap.getRawFish() >= RotationConstants.FIRST_COOK_AT)
+		{
+			return true;
+		}
+		if (snap.getTotalFish() >= RotationConstants.INVENTORY_TARGET)
+		{
+			return true;
+		}
+		if (snap.isDoubleSpotUp() && snap.getEmptySlots() > 0
+			&& snap.getTotalFish() < RotationConstants.INVENTORY_TARGET
+			&& snap.getNearbyFires() <= 0)
+		{
+			return false;
+		}
+		return snap.getEmptySlots() <= 0;
+	}
+
+	private static boolean shouldSpirit(GameSnapshot snap)
+	{
+		if (!snap.isDump16Done())
+		{
+			return false;
+		}
+		if (snap.isSpiritPoolDone())
+		{
+			return false;
+		}
+		if (snap.isSpiritPoolUp() && !snap.isSpiritPoolAttackable())
+		{
+			return false;
+		}
+		// A finished deposit sends us to the pool even if an over-fished remainder is still held.
+		if (snap.isNeedsSpirit())
+		{
+			return true;
+		}
+		if (snap.getTotalFish() > 0)
+		{
+			return false;
+		}
+		int energy = snap.getEnergy();
+		return energy >= 0 && energy < RotationConstants.ENERGY_FULL;
+	}
+
+	private static boolean needsDouse(GameSnapshot snap)
+	{
+		if (snap.isDouseDone() || snap.getNearbyFires() <= 0)
+		{
+			return false;
+		}
+		if (!snap.isDump16Done())
+		{
+			return false;
+		}
+		if (snap.isDepositingAll() || snap.isDepositingKeep3())
+		{
+			return false;
+		}
+		if (snap.getRawFish() > 0)
+		{
+			return false;
+		}
+		int keep = Math.max(RotationConstants.FIRST_DUMP_KEEP, snap.getDepositKeep3StopAt());
+		return snap.getDumpableFish() <= keep && snap.getDumpableFish() > 0;
+	}
+
+	private static boolean shouldDepositKeep3(GameSnapshot snap)
+	{
+		return !snap.isDump16Done()
+			&& snap.getDumpableFish() >= RotationConstants.INVENTORY_TARGET
+			&& snap.getRawFish() == 0;
+	}
+
+	private static boolean shouldDepositAll(GameSnapshot snap)
+	{
+		return snap.isDump16Done()
+			&& snap.getDumpableFish() >= RotationConstants.INVENTORY_TARGET
+			&& snap.getRawFish() == 0;
+	}
+
+	static int fishTarget(GameSnapshot snap)
+	{
+		if (!snap.isDump16Done() && !snap.isFirstCookDone())
+		{
+			if (snap.getDumpableFish() >= RotationConstants.FIRST_COOK_AT && snap.getRawFish() == 0)
+			{
+				return RotationConstants.INVENTORY_TARGET;
+			}
+			return RotationConstants.FIRST_COOK_AT;
+		}
+		return RotationConstants.INVENTORY_TARGET;
+	}
+}

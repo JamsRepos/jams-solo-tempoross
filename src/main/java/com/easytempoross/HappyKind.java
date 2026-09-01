@@ -1,0 +1,23 @@
+package com.easytempoross;
+
+public enum HappyKind
+{
+	IDLE,
+	PREP_HARPOON,
+	PREP_ROPE,
+	PREP_HAMMER,
+	PREP_BUCKETS,
+	SOLO_START,
+	FILL_SHIP,
+	LEAVE_SHIP,
+	FISH,
+	FISH_DOUBLE,
+	COOK,
+	DEPOSIT_KEEP3,
+	DEPOSIT,
+	DOUSE,
+	FILL_PUMP,
+	SPIRIT,
+	LEAVE_GAME,
+	REFILL_DOCK
+}
