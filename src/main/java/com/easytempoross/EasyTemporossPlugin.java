@@ -34,7 +34,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 @Slf4j
 @PluginDescriptor(
 	name = "Jam's Solo Tempoross",
-	description = "16/19/19 solo Tempoross helper - click-here guidance, pathing, and recovery",
+	description = "Guided walkthrough of the 16/19/19 solo Tempoross rotation with click-here help, pathing, and recovery",
 	tags = {"tempoross", "fishing", "solo", "minigame", "skilling", "helper"}
 )
 public class EasyTemporossPlugin extends Plugin

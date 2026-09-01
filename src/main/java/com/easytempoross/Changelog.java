@@ -6,7 +6,7 @@ import java.util.List;
 
 final class Changelog
 {
-	static final String VERSION = "1.0.3";
+	static final String VERSION = "1.0.4";
 
 	static final List<Release> RELEASES = List.of(
 		new Release("1.0.0",
@@ -20,8 +20,8 @@ final class Changelog
 		new Release("1.0.2",
 			"Renamed from Easy Tempoross to Jam's Solo Tempoross in the plugin panel and Hub."
 		),
-		new Release("1.0.3",
-			"Fixed the Plugin Hub description text."
+		new Release("1.0.4",
+			"Improved Plugin Hub description."
 		)
 	);
 
