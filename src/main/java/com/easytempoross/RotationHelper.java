@@ -56,6 +56,7 @@ public class RotationHelper
 	private int depositKeep3StopAt = RotationConstants.FIRST_DUMP_KEEP;
 	private int depositAllStopAt;
 	private int lastDepositsLeft;
+	private RotationStep lastChimeStep = RotationStep.IDLE;
 	private boolean needsSpirit;
 	private boolean sawSpiritPool;
 	private boolean sawSpiritHarpoon;
@@ -105,6 +106,7 @@ public class RotationHelper
 		depositKeep3StopAt = RotationConstants.FIRST_DUMP_KEEP;
 		depositAllStopAt = 0;
 		lastDepositsLeft = 0;
+		lastChimeStep = RotationStep.IDLE;
 		needsSpirit = false;
 		sawSpiritPool = false;
 		sawSpiritHarpoon = false;
@@ -251,6 +253,7 @@ public class RotationHelper
 		{
 			currentAction = HelperAction.idle();
 			pathRouter.reset();
+			lastChimeStep = RotationStep.IDLE;
 			return;
 		}
 
@@ -309,29 +312,43 @@ public class RotationHelper
 			color,
 			recover);
 
-		updateDepositChime();
+		updateChimes();
 	}
 
-	/** Counts the last few crate loads down out loud so you can look away from the screen. */
-	private void updateDepositChime()
+	/** Counts crate loads down out loud, and optionally bells when other AFK steps finish. */
+	private void updateChimes()
 	{
 		int left = getDepositActionsLeft();
-		if (left == lastDepositsLeft)
-		{
-			return;
-		}
-		if (config.depositChime() && left < lastDepositsLeft)
+		boolean chiming = config.depositChime() && gameSnapshot.isInMinigame();
+		if (chiming && left < lastDepositsLeft)
 		{
 			if (left == 0)
 			{
-				client.playSoundEffect(SoundEffectID.TOWN_CRIER_BELL_DONG);
+				playPluginSound(SoundEffectID.TOWN_CRIER_BELL_DONG);
 			}
 			else if (left <= RotationConstants.DEPOSIT_CHIME_FROM)
 			{
-				client.playSoundEffect(SoundEffectID.UI_BOOP);
+				playPluginSound(SoundEffectID.UI_BOOP);
 			}
 		}
 		lastDepositsLeft = left;
+
+		RotationStep step = currentAction.getStep();
+		if (chiming && ChimePolicy.shouldPlayActionStop(lastChimeStep, step, config.chimeMode()))
+		{
+			playPluginSound(SoundEffectID.TOWN_CRIER_BELL_DONG);
+		}
+		lastChimeStep = step;
+	}
+
+	private void playPluginSound(int soundId)
+	{
+		int volume = config.soundVolume();
+		if (volume <= 0)
+		{
+			return;
+		}
+		client.playSoundEffect(soundId, volume);
 	}
 
 	private void clearGame()
@@ -350,6 +367,7 @@ public class RotationHelper
 		depositKeep3StopAt = RotationConstants.FIRST_DUMP_KEEP;
 		depositAllStopAt = 0;
 		lastDepositsLeft = 0;
+		lastChimeStep = RotationStep.IDLE;
 		needsSpirit = false;
 		sawSpiritPool = false;
 		sawSpiritHarpoon = false;

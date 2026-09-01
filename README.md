@@ -9,7 +9,7 @@ This plugin does not click for you.
 - **Next click** — the fishing spot, shrine, totem, crate, pump, or spirit pool you should click is highlighted.
 - **Path** — a line on the floor and/or minimap to where you are going. Fires are pathed around. Turn either line off in settings if you prefer.
 - **Status panel** — the current step, fish counts, buckets, and (optionally) a compact energy / storm / points readout instead of the default game HUD.
-- **Deposit countdown** — a large on-screen count of crate deposits left, with optional audio chimes at 3, 2, 1, and 0.
+- **Deposit countdown** — a large on-screen count of crate deposits left, with optional audio chimes at 3, 2, 1, and a stop at 0. The stop can also play when other AFK steps finish.
 - **Recover:** — if you fall off the rotation, the panel says so and points you back.
 
 After an update, chat shows what changed the first time you log in.
@@ -50,7 +50,9 @@ Everything is on by default except the idle screen tint.
 | Countdown size | Text size when the countdown reaches the last 3 deposits |
 | Replace game HUD | Hide the default Tempoross bars; show energy, storm, and points in the status panel |
 | Hide fishing and cooking overlays | Hide RuneLite's fishing/cooking stat overlays during a game |
-| Deposit countdown chime | Audio at 3, 2, 1 deposits left, then a bell at 0 |
+| Countdown chime | Audio at 3, 2, 1 deposits left, then a bell at 0 |
+| Final chime | All Actions also bells when fishing, cooking, filling, or the spirit pool finishes. Deposit Only keeps the bell on the crate countdown |
+| Sound volume | Plugin chime volume (does not change the game's sound-effect slider) |
 | Idle reminder | How long you can stand still before a warning |
 | Idle screen tint | Optional faint tint when idle |
 

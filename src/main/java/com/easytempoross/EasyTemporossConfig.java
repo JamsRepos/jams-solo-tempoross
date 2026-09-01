@@ -20,9 +20,16 @@ public interface EasyTemporossConfig extends Config
 	String helperSection = "helper";
 
 	@ConfigSection(
+		name = "Sounds",
+		description = "Plugin chimes, independent of the in-game sound-effect volume",
+		position = 1
+	)
+	String soundsSection = "sounds";
+
+	@ConfigSection(
 		name = "Reminders",
 		description = "Idle warning",
-		position = 1
+		position = 2
 	)
 	String reminderSection = "reminders";
 
@@ -137,14 +144,39 @@ public interface EasyTemporossConfig extends Config
 
 	@ConfigItem(
 		keyName = "depositChime",
-		name = "Deposit countdown chime",
+		name = "Countdown chime",
 		description = "Play a chime at 3, 2, and 1 deposits left, then a louder stop at 0",
-		section = helperSection,
-		position = 9
+		section = soundsSection,
+		position = 0
 	)
 	default boolean depositChime()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "chimeMode",
+		name = "Final chime",
+		description = "All Actions also plays the stop sound when fishing, cooking, filling, or the spirit pool finishes. Deposit Only keeps that sound on the crate countdown.",
+		section = soundsSection,
+		position = 1
+	)
+	default ChimeMode chimeMode()
+	{
+		return ChimeMode.ALL_ACTIONS;
+	}
+
+	@Range(max = 127)
+	@ConfigItem(
+		keyName = "soundVolume",
+		name = "Sound volume",
+		description = "Volume for plugin chimes. This does not change the game's own sound-effect slider.",
+		section = soundsSection,
+		position = 2
+	)
+	default int soundVolume()
+	{
+		return 64;
 	}
 
 	@Range(min = 3, max = 120)
