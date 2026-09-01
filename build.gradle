@@ -28,7 +28,7 @@ dependencies {
 }
 
 group = 'com.easytempoross'
-version = '1.0.0' // Keep Changelog.VERSION
+version = '1.0.1' // Keep Changelog.VERSION
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'

@@ -6,13 +6,16 @@ import java.util.List;
 
 final class Changelog
 {
-	static final String VERSION = "1.0.0";
+	static final String VERSION = "1.0.1";
 
 	static final List<Release> RELEASES = List.of(
 		new Release("1.0.0",
 			"Jam's Solo Tempoross: click-here guidance, path, and a status panel.",
 			"Guides the 16/19/19 west-boat rotation, then loops the next game.",
 			"Recovers if you AFK, miss a wave, lose tools, or dump the wrong amount."
+		),
+		new Release("1.0.1",
+			"Added Tempoross plugin icon."
 		)
 	);
 
