@@ -63,7 +63,8 @@ final class Pathfinder
 		int size = flags.length;
 		int sx = startLocal.getSceneX();
 		int sy = startLocal.getSceneY();
-		int[] goal = nearestWalkable(worldView, flags, endLocal.getSceneX(), endLocal.getSceneY(), size, blocked, plane);
+		int[] goal = nearestWalkable(worldView, flags, endLocal.getSceneX(), endLocal.getSceneY(),
+			sx, sy, size, blocked, plane);
 		if (!inBounds(sx, sy, size) || goal == null)
 		{
 			return Collections.emptyList();
@@ -181,6 +182,102 @@ final class Pathfinder
 		return out;
 	}
 
+	/**
+	 * Pulls the walk taut: drops a waypoint when the next one is still reachable in a straight
+	 * collision-checked line. Stops chords from cutting across water or fire.
+	 */
+	static List<WorldPoint> smooth(WorldView worldView, List<WorldPoint> path, Set<WorldPoint> blocked)
+	{
+		if (path == null || path.size() < 3 || worldView == null)
+		{
+			return path == null ? Collections.emptyList() : path;
+		}
+
+		CollisionData[] maps = worldView.getCollisionMaps();
+		if (maps == null)
+		{
+			return path;
+		}
+		int plane = worldView.getPlane();
+		if (plane < 0 || plane >= maps.length || maps[plane] == null)
+		{
+			return path;
+		}
+		int[][] flags = maps[plane].getFlags();
+		if (flags == null || flags.length == 0)
+		{
+			return path;
+		}
+
+		List<WorldPoint> out = new ArrayList<>();
+		out.add(path.get(0));
+		int anchor = 0;
+		for (int i = 1; i < path.size(); i++)
+		{
+			boolean last = i == path.size() - 1;
+			if (last || !lineClear(worldView, flags, path.get(anchor), path.get(i + 1), blocked, plane))
+			{
+				WorldPoint keep = path.get(i);
+				if (!keep.equals(out.get(out.size() - 1)))
+				{
+					out.add(keep);
+				}
+				anchor = i;
+			}
+		}
+		return out;
+	}
+
+	private static boolean lineClear(WorldView worldView, int[][] flags, WorldPoint from, WorldPoint to,
+		Set<WorldPoint> blocked, int plane)
+	{
+		if (from == null || to == null)
+		{
+			return false;
+		}
+		LocalPoint a = LocalPoint.fromWorld(worldView, from);
+		LocalPoint b = LocalPoint.fromWorld(worldView, to);
+		if (a == null || b == null)
+		{
+			return false;
+		}
+		int x0 = a.getSceneX();
+		int y0 = a.getSceneY();
+		int x1 = b.getSceneX();
+		int y1 = b.getSceneY();
+		int size = flags.length;
+		int steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+		if (steps <= 0)
+		{
+			return true;
+		}
+		int px = x0;
+		int py = y0;
+		for (int i = 1; i <= steps; i++)
+		{
+			int nx = x0 + (x1 - x0) * i / steps;
+			int ny = y0 + (y1 - y0) * i / steps;
+			int dx = nx - px;
+			int dy = ny - py;
+			if (dx == 0 && dy == 0)
+			{
+				continue;
+			}
+			if (Math.abs(dx) > 1 || Math.abs(dy) > 1 || !inBounds(nx, ny, size)
+				|| !canMove(flags, px, py, dx, dy, size))
+			{
+				return false;
+			}
+			if (isBlocked(worldView, nx, ny, plane, blocked) && !(nx == x1 && ny == y1))
+			{
+				return false;
+			}
+			px = nx;
+			py = ny;
+		}
+		return px == x1 && py == y1;
+	}
+
 	private static void tryAdd(
 		WorldView worldView,
 		PriorityQueue<Node> open,
@@ -201,7 +298,8 @@ final class Pathfinder
 		{
 			return;
 		}
-		if (!canMove(flags, cur.x, cur.y, dx, dy, size))
+		boolean atGoal = nx == ex && ny == ey;
+		if (!canMove(flags, cur.x, cur.y, dx, dy, size, atGoal))
 		{
 			return;
 		}
@@ -225,14 +323,16 @@ final class Pathfinder
 		return point != null && blocked.contains(point);
 	}
 
-	private static int[] nearestWalkable(WorldView worldView, int[][] flags, int x, int y, int size,
-		Set<WorldPoint> blocked, int plane)
+	private static int[] nearestWalkable(WorldView worldView, int[][] flags, int x, int y,
+		int fromX, int fromY, int size, Set<WorldPoint> blocked, int plane)
 	{
-		if (inBounds(x, y, size) && (flags[x][y] & CollisionDataFlag.BLOCK_MOVEMENT_FULL) == 0
-			&& !isBlocked(worldView, x, y, plane, blocked))
+		if (inBounds(x, y, size) && isStandable(worldView, flags, x, y, blocked, plane))
 		{
 			return new int[]{x, y};
 		}
+		int bestNx = Integer.MIN_VALUE;
+		int bestNy = 0;
+		int best = Integer.MAX_VALUE;
 		for (int r = 1; r <= WALKABLE_SEARCH; r++)
 		{
 			for (int dx = -r; dx <= r; dx++)
@@ -245,15 +345,33 @@ final class Pathfinder
 					}
 					int nx = x + dx;
 					int ny = y + dy;
-					if (inBounds(nx, ny, size) && (flags[nx][ny] & CollisionDataFlag.BLOCK_MOVEMENT_FULL) == 0
-						&& !isBlocked(worldView, nx, ny, plane, blocked))
+					if (!inBounds(nx, ny, size)
+						|| !isStandable(worldView, flags, nx, ny, blocked, plane))
 					{
-						return new int[]{nx, ny};
+						continue;
+					}
+					int score = octile(nx, ny, x, y) * 8 + octile(nx, ny, fromX, fromY);
+					if (score < best)
+					{
+						best = score;
+						bestNx = nx;
+						bestNy = ny;
 					}
 				}
 			}
 		}
+		if (bestNx != Integer.MIN_VALUE)
+		{
+			return new int[]{bestNx, bestNy};
+		}
 		return inBounds(x, y, size) ? new int[]{x, y} : null;
+	}
+
+	private static boolean isStandable(WorldView worldView, int[][] flags, int x, int y,
+		Set<WorldPoint> blocked, int plane)
+	{
+		return (flags[x][y] & CollisionDataFlag.BLOCK_MOVEMENT_FULL) == 0
+			&& !isBlocked(worldView, x, y, plane, blocked);
 	}
 
 	private static int octile(int x, int y, int ex, int ey)
@@ -270,6 +388,12 @@ final class Pathfinder
 
 	private static boolean canMove(int[][] flags, int x, int y, int dx, int dy, int size)
 	{
+		return canMove(flags, x, y, dx, dy, size, false);
+	}
+
+	private static boolean canMove(int[][] flags, int x, int y, int dx, int dy, int size,
+		boolean allowBlockedDest)
+	{
 		int nx = x + dx;
 		int ny = y + dy;
 		if (!inBounds(nx, ny, size))
@@ -279,34 +403,55 @@ final class Pathfinder
 
 		if (dx != 0 && dy != 0)
 		{
-			return canMove(flags, x, y, dx, 0, size) && canMove(flags, x, y, 0, dy, size)
-				&& (flags[nx][ny] & CollisionDataFlag.BLOCK_MOVEMENT_FULL) == 0;
+			return canMove(flags, x, y, dx, 0, size, false) && canMove(flags, x, y, 0, dy, size, false)
+				&& (allowBlockedDest || (flags[nx][ny] & CollisionDataFlag.BLOCK_MOVEMENT_FULL) == 0);
 		}
 
-		if ((flags[nx][ny] & CollisionDataFlag.BLOCK_MOVEMENT_FULL) != 0)
+		int destFlags = flags[nx][ny];
+		if (!allowBlockedDest && (destFlags & CollisionDataFlag.BLOCK_MOVEMENT_FULL) != 0)
 		{
 			return false;
 		}
 
 		int cur = flags[x][y];
-		int dest = flags[nx][ny];
+		if (allowBlockedDest && (destFlags & CollisionDataFlag.BLOCK_MOVEMENT_FULL) != 0)
+		{
+			return outgoingClear(cur, dx, dy);
+		}
 		if (dx == 1)
 		{
 			return (cur & CollisionDataFlag.BLOCK_MOVEMENT_EAST) == 0
-				&& (dest & CollisionDataFlag.BLOCK_MOVEMENT_WEST) == 0;
+				&& (destFlags & CollisionDataFlag.BLOCK_MOVEMENT_WEST) == 0;
 		}
 		if (dx == -1)
 		{
 			return (cur & CollisionDataFlag.BLOCK_MOVEMENT_WEST) == 0
-				&& (dest & CollisionDataFlag.BLOCK_MOVEMENT_EAST) == 0;
+				&& (destFlags & CollisionDataFlag.BLOCK_MOVEMENT_EAST) == 0;
 		}
 		if (dy == 1)
 		{
 			return (cur & CollisionDataFlag.BLOCK_MOVEMENT_NORTH) == 0
-				&& (dest & CollisionDataFlag.BLOCK_MOVEMENT_SOUTH) == 0;
+				&& (destFlags & CollisionDataFlag.BLOCK_MOVEMENT_SOUTH) == 0;
 		}
 		return (cur & CollisionDataFlag.BLOCK_MOVEMENT_SOUTH) == 0
-			&& (dest & CollisionDataFlag.BLOCK_MOVEMENT_NORTH) == 0;
+			&& (destFlags & CollisionDataFlag.BLOCK_MOVEMENT_NORTH) == 0;
+	}
+
+	private static boolean outgoingClear(int cur, int dx, int dy)
+	{
+		if (dx == 1)
+		{
+			return (cur & CollisionDataFlag.BLOCK_MOVEMENT_EAST) == 0;
+		}
+		if (dx == -1)
+		{
+			return (cur & CollisionDataFlag.BLOCK_MOVEMENT_WEST) == 0;
+		}
+		if (dy == 1)
+		{
+			return (cur & CollisionDataFlag.BLOCK_MOVEMENT_NORTH) == 0;
+		}
+		return (cur & CollisionDataFlag.BLOCK_MOVEMENT_SOUTH) == 0;
 	}
 
 	private static final class Node

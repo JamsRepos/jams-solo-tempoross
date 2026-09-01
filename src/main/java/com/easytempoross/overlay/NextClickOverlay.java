@@ -119,13 +119,11 @@ public class NextClickOverlay extends Overlay
 
 		WorldPoint here = player == null ? null : player.getWorldLocation();
 		boolean pendingGap = false;
-		WorldPoint prevTile = here;
 		for (int i = 0; i < path.size(); i++)
 		{
 			WorldPoint tile = path.get(i);
-			if (here != null && tile.distanceTo(here) <= 1 && i < path.size() - 1)
+			if (i == 0 && here != null && tile.distanceTo(here) <= 1 && path.size() > 1)
 			{
-				prevTile = tile;
 				continue;
 			}
 
@@ -133,14 +131,12 @@ public class NextClickOverlay extends Overlay
 			if (local == null)
 			{
 				pendingGap = true;
-				prevTile = tile;
 				continue;
 			}
 			Point canvas = Perspective.localToCanvas(client, local, plane);
 			if (canvas == null)
 			{
 				pendingGap = true;
-				prevTile = tile;
 				continue;
 			}
 			if (!started)
@@ -157,7 +153,6 @@ public class NextClickOverlay extends Overlay
 				line.lineTo(canvas.getX(), canvas.getY());
 			}
 			pendingGap = false;
-			prevTile = tile;
 		}
 
 		if (!started)

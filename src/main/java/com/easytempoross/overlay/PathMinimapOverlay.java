@@ -76,7 +76,8 @@ public class PathMinimapOverlay extends Overlay
 
 		Path2D.Float line = new Path2D.Float();
 		boolean started = false;
-		WorldPoint prevTile = player == null ? null : player.getWorldLocation();
+		boolean pendingGap = false;
+		WorldPoint here = player == null ? null : player.getWorldLocation();
 		if (player != null)
 		{
 			Point mini = toMinimap(player.getWorldLocation(), worldView, player);
@@ -90,10 +91,14 @@ public class PathMinimapOverlay extends Overlay
 		for (int i = 0; i < path.size(); i++)
 		{
 			WorldPoint tile = path.get(i);
+			if (i == 0 && here != null && tile.distanceTo(here) <= 1 && path.size() > 1)
+			{
+				continue;
+			}
 			Point mini = toMinimap(tile, worldView, player);
 			if (mini == null)
 			{
-				prevTile = tile;
+				pendingGap = true;
 				continue;
 			}
 			if (!started)
@@ -101,11 +106,15 @@ public class PathMinimapOverlay extends Overlay
 				line.moveTo(mini.getX(), mini.getY());
 				started = true;
 			}
+			else if (pendingGap)
+			{
+				line.moveTo(mini.getX(), mini.getY());
+			}
 			else
 			{
 				line.lineTo(mini.getX(), mini.getY());
 			}
-			prevTile = tile;
+			pendingGap = false;
 		}
 
 		if (!started)

@@ -1,5 +1,6 @@
 package com.easytempoross;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -7,17 +8,17 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.runelite.api.WorldView;
-import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 
 @Singleton
 class PathRouter
 {
 	private static final int AT_TARGET = RotationConstants.AT_TARGET_TILES;
-	private static final int DRIFT_TILES = 6;
 
 	private List<WorldPoint> cachedPath = Collections.emptyList();
 	private WorldPoint cachedEnd;
+	private boolean useDirect;
+	private WorldPoint directFrom;
 
 	@Inject
 	PathRouter()
@@ -28,6 +29,8 @@ class PathRouter
 	{
 		cachedPath = Collections.emptyList();
 		cachedEnd = null;
+		useDirect = false;
+		directFrom = null;
 	}
 
 	List<WorldPoint> pathTo(WorldView worldView, WorldPoint start, WorldPoint end, Set<WorldPoint> blocked, boolean showPath)
@@ -38,53 +41,44 @@ class PathRouter
 			return Collections.emptyList();
 		}
 
-		if (end.equals(cachedEnd) && cachedPath.size() > 1)
+		Set<WorldPoint> block = blocked == null ? Collections.emptySet() : blocked;
+		if (end.equals(cachedEnd) && useDirect && directFrom != null
+			&& start.distanceTo(directFrom) < 3)
 		{
-			List<WorldPoint> trimmed = trim(cachedPath, start);
-			if (trimmed != null)
-			{
-				cachedPath = trimmed;
-				return Pathfinder.simplify(trimmed);
-			}
+			return directLine(worldView, start, end);
+		}
+		if (end.equals(cachedEnd) && PathPolicy.canReuse(start, end, cachedPath))
+		{
+			int nearest = PathPolicy.nearestIndex(cachedPath, start);
+			List<WorldPoint> trimmed = new ArrayList<>(cachedPath.subList(nearest, cachedPath.size()));
+			cachedPath = trimmed;
+			return Pathfinder.simplify(Pathfinder.smooth(worldView, trimmed, block));
 		}
 
-		Set<WorldPoint> block = blocked == null ? Collections.emptySet() : blocked;
 		List<WorldPoint> path = Pathfinder.find(worldView, start, end, block);
 		if (path == null || path.isEmpty())
 		{
-			if (worldView == null || LocalPoint.fromWorld(worldView, end) == null)
-			{
-				reset();
-				return Collections.emptyList();
-			}
-			path = Arrays.asList(start, end);
+			useDirect = true;
+			directFrom = start;
+			cachedPath = Collections.emptyList();
+			cachedEnd = end;
+			return directLine(worldView, start, end);
 		}
+		useDirect = false;
+		directFrom = null;
+		path = Pathfinder.smooth(worldView, path, block);
 		cachedPath = path;
 		cachedEnd = end;
 		return Pathfinder.simplify(path);
 	}
 
-	private List<WorldPoint> trim(List<WorldPoint> path, WorldPoint start)
+	private List<WorldPoint> directLine(WorldView worldView, WorldPoint start, WorldPoint end)
 	{
-		int nearest = 0;
-		int best = Integer.MAX_VALUE;
-		for (int i = 0; i < path.size(); i++)
-		{
-			int d = path.get(i).distanceTo(start);
-			if (d < best)
-			{
-				best = d;
-				nearest = i;
-			}
-		}
-		if (best > DRIFT_TILES)
-		{
-			return null;
-		}
-		if (nearest >= path.size() - 1)
+		WorldPoint clamped = Pathfinder.clampToScene(worldView, start, end);
+		if (clamped == null || start.distanceTo(clamped) <= AT_TARGET)
 		{
 			return Collections.emptyList();
 		}
-		return path.subList(nearest, path.size());
+		return Arrays.asList(start, clamped);
 	}
 }
