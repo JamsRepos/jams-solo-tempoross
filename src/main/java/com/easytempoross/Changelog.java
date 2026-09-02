@@ -6,7 +6,7 @@ import java.util.List;
 
 final class Changelog
 {
-	static final String VERSION = "1.0.4";
+	static final String VERSION = "1.0.5";
 
 	static final List<Release> RELEASES = List.of(
 		new Release("1.0.0",
@@ -28,6 +28,11 @@ final class Changelog
 			"Stopped path lines from snapping to an old waypoint and drawing a V across the dock.",
 			"If collision cannot walk a route, the line still draws from your current tile to the target.",
 			"Updated the plugin icon."
+		),
+		new Release("1.0.5",
+			"The two path checkboxes are now one Path display dropdown: floor & minimap, floor only, minimap only, or off. Your old choice carries over.",
+			"Added a Path source dropdown so the Shortest Path plugin can draw the route instead, coloured by the current step.",
+			"Fixed the minimap path drawing nothing when the floor path was turned off."
 		)
 	);
 

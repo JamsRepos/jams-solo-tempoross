@@ -11,6 +11,12 @@ public interface EasyTemporossConfig extends Config
 {
 	String GROUP = "jams-solo-tempoross";
 	String SEEN_CHANGELOG_VERSION_KEY = "seenChangelogVersion";
+	String PATH_DISPLAY_KEY = "pathDisplay";
+	String PATH_PROVIDER_KEY = "pathProvider";
+	/** Replaced by {@link #PATH_DISPLAY_KEY}; still read once by {@link PathDisplayMigration}. */
+	String LEGACY_SHOW_PATH_KEY = "showPath";
+	/** Replaced by {@link #PATH_DISPLAY_KEY}; still read once by {@link PathDisplayMigration}. */
+	String LEGACY_SHOW_MINIMAP_PATH_KEY = "showMinimapPath";
 
 	@ConfigSection(
 		name = "Helper",
@@ -58,27 +64,27 @@ public interface EasyTemporossConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "showPath",
-		name = "Show path on floor",
-		description = "Draw a line on the ground to your next destination.",
+		keyName = PATH_DISPLAY_KEY,
+		name = "Path display",
+		description = "Where to draw the path to your next destination. Click highlights are unaffected.",
 		section = helperSection,
 		position = 2
 	)
-	default boolean showPath()
+	default PathDisplay pathDisplay()
 	{
-		return true;
+		return PathDisplay.FLOOR_AND_MINIMAP;
 	}
 
 	@ConfigItem(
-		keyName = "showMinimapPath",
-		name = "Show path on minimap",
-		description = "Draw the same path on the minimap.",
+		keyName = PATH_PROVIDER_KEY,
+		name = "Path source",
+		description = "Plugin lines draws this plugin's own path. Shortest Path hands the destination to the Shortest Path plugin instead, coloured by the current step, and falls back to plugin lines when that plugin is not running.",
 		section = helperSection,
 		position = 3
 	)
-	default boolean showMinimapPath()
+	default PathProvider pathProvider()
 	{
-		return true;
+		return PathProvider.PLUGIN;
 	}
 
 	@ConfigItem(

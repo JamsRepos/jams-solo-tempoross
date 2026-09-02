@@ -65,7 +65,7 @@ public class NextClickOverlay extends Overlay
 		}
 
 		Color base = action.getColor() != null ? action.getColor() : Color.CYAN;
-		if (config.showPath())
+		if (config.pathDisplay().showsFloor())
 		{
 			renderPath(graphics, action.getPath(), base);
 		}

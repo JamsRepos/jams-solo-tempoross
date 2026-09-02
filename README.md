@@ -43,8 +43,8 @@ Everything is on by default except the idle screen tint.
 |---|---|
 | Enable helper | Turns the highlights, path, and panel on or off |
 | Highlight next click | Outline on the next object or NPC |
-| Show path on floor | Line on the ground |
-| Show path on minimap | Same line on the minimap |
+| Path display | Where the path is drawn: floor & minimap, floor only, minimap only, or off |
+| Path source | Plugin lines, or hand the destination to the [Shortest Path](https://runelite.net/plugin-hub/show/shortest-path) plugin coloured by the current step |
 | Show status panel | Step, counts, and reminders |
 | Deposit countdown | Large on-screen count of crate deposits left |
 | Countdown size | Text size when the countdown reaches the last 3 deposits |

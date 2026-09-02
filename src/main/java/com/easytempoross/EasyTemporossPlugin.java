@@ -27,6 +27,7 @@ import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
@@ -70,11 +71,18 @@ public class EasyTemporossPlugin extends Plugin
 	private ChangelogService changelogService;
 
 	@Inject
+	private PathDisplayMigration pathDisplayMigration;
+
+	@Inject
+	private ShortestPathBridge shortestPathBridge;
+
+	@Inject
 	private ClientThread clientThread;
 
 	@Override
 	protected void startUp()
 	{
+		pathDisplayMigration.run();
 		rotationHelper.reset();
 		sceneTracker.reset();
 		sceneTracker.scanScene();
@@ -98,6 +106,22 @@ public class EasyTemporossPlugin extends Plugin
 		rotationHelper.reset();
 		sceneTracker.reset();
 		changelogService.reset();
+		shortestPathBridge.clear();
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (!EasyTemporossConfig.GROUP.equals(event.getGroup()))
+		{
+			return;
+		}
+		String key = event.getKey();
+		if (EasyTemporossConfig.PATH_DISPLAY_KEY.equals(key)
+			|| EasyTemporossConfig.PATH_PROVIDER_KEY.equals(key))
+		{
+			shortestPathBridge.clear();
+		}
 	}
 
 	@Subscribe

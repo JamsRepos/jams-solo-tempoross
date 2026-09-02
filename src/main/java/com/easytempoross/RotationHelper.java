@@ -27,6 +27,7 @@ public class RotationHelper
 	private final InventoryChecker inventoryChecker;
 	private final SceneTracker sceneTracker;
 	private final PathRouter pathRouter;
+	private final ShortestPathBridge shortestPathBridge;
 	private final GameHud gameHud;
 	private final OverlaySuppressor overlaySuppressor;
 	private final WaveTracker waveTracker;
@@ -72,6 +73,7 @@ public class RotationHelper
 		InventoryChecker inventoryChecker,
 		SceneTracker sceneTracker,
 		PathRouter pathRouter,
+		ShortestPathBridge shortestPathBridge,
 		GameHud gameHud,
 		OverlaySuppressor overlaySuppressor,
 		WaveTracker waveTracker,
@@ -83,6 +85,7 @@ public class RotationHelper
 		this.inventoryChecker = inventoryChecker;
 		this.sceneTracker = sceneTracker;
 		this.pathRouter = pathRouter;
+		this.shortestPathBridge = shortestPathBridge;
 		this.gameHud = gameHud;
 		this.overlaySuppressor = overlaySuppressor;
 		this.waveTracker = waveTracker;
@@ -114,6 +117,7 @@ public class RotationHelper
 		lastEnergy = -1;
 		sawMinigame = false;
 		pathRouter.reset();
+		shortestPathBridge.clear();
 		gameHud.reset();
 		overlaySuppressor.reset();
 		waveTracker.reset();
@@ -140,6 +144,7 @@ public class RotationHelper
 			overlaySuppressor.update(false);
 			currentAction = HelperAction.idle();
 			pathRouter.reset();
+			shortestPathBridge.clear();
 			idleReminder.update(false);
 			gameSnapshot = GameSnapshot.empty();
 			return;
@@ -160,6 +165,7 @@ public class RotationHelper
 			overlaySuppressor.update(false);
 			currentAction = HelperAction.idle();
 			pathRouter.reset();
+			shortestPathBridge.clear();
 		}
 
 		Player player = client.getLocalPlayer();
@@ -253,6 +259,7 @@ public class RotationHelper
 		{
 			currentAction = HelperAction.idle();
 			pathRouter.reset();
+			shortestPathBridge.clear();
 			lastChimeStep = RotationStep.IDLE;
 			return;
 		}
@@ -282,15 +289,16 @@ public class RotationHelper
 		boolean skipHighlight = shouldAfk(step, gameSnapshot, busySpirit);
 		WorldView worldView = client.getTopLevelWorldView();
 		WorldPoint dest = destination(target);
-		Set<WorldPoint> blocked = sceneTracker.fireTiles(workArea);
-		List<WorldPoint> path = dest == null
-			? Collections.emptyList()
-			: pathRouter.pathTo(worldView, loc, dest, blocked, config.showPath());
 		if (step == RotationStep.SOLO_START && loc != null && dest != null
 			&& loc.distanceTo(dest) <= RotationConstants.AT_TARGET_TILES + 2)
 		{
-			path = Collections.emptyList();
+			dest = null;
 		}
+		Set<WorldPoint> blocked = sceneTracker.fireTiles(workArea);
+		boolean ownPath = !config.pathDisplay().isOff() && !shortestPathBridge.isDriving();
+		List<WorldPoint> path = dest == null
+			? Collections.emptyList()
+			: pathRouter.pathTo(worldView, loc, dest, blocked, ownPath);
 
 		if (log.isDebugEnabled() && currentAction.getStep() != step)
 		{
@@ -302,6 +310,7 @@ public class RotationHelper
 		}
 
 		Color color = step.getColor();
+		shortestPathBridge.update(dest, color);
 		currentAction = new HelperAction(
 			step,
 			detail,
