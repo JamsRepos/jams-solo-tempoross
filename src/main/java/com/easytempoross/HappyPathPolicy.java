@@ -9,6 +9,101 @@ final class HappyPathPolicy
 	{
 	}
 
+	/**
+	 * The happy-path step after the current action finishes, or {@link HappyKind#IDLE} when
+	 * recovery is active, the current step has no peek, or the following step is unchanged.
+	 */
+	static HappyKind peekAfter(GameSnapshot snap)
+	{
+		if (snap == null || RecoveryPolicy.isRecover(RecoveryPolicy.decide(snap)))
+		{
+			return HappyKind.IDLE;
+		}
+		HappyKind current = decide(snap);
+		GameSnapshot after = after(snap, current);
+		if (after == null)
+		{
+			return HappyKind.IDLE;
+		}
+		HappyKind next = decide(after);
+		if (next == HappyKind.IDLE || next == current)
+		{
+			return HappyKind.IDLE;
+		}
+		return next;
+	}
+
+	private static GameSnapshot after(GameSnapshot snap, HappyKind current)
+	{
+		switch (current)
+		{
+			case FISH:
+			case FISH_DOUBLE:
+				return afterFish(snap);
+			case COOK:
+				return afterCook(snap);
+			case DEPOSIT_KEEP3:
+				return afterDepositKeep3(snap);
+			case DEPOSIT:
+				return afterDepositAll(snap);
+			case SPIRIT:
+				return afterSpirit(snap);
+			default:
+				return null;
+		}
+	}
+
+	private static GameSnapshot afterFish(GameSnapshot snap)
+	{
+		int need = Math.max(0, fishTarget(snap) - snap.getTotalFish());
+		return snap.toBuilder()
+			.rawFish(snap.getRawFish() + need)
+			.emptySlots(Math.max(0, snap.getEmptySlots() - need))
+			.busyFishing(false)
+			.build();
+	}
+
+	private static GameSnapshot afterCook(GameSnapshot snap)
+	{
+		int cooked = snap.getCookedFish() + snap.getRawFish();
+		return snap.toBuilder()
+			.rawFish(0)
+			.cookedFish(cooked)
+			.firstCookDone(snap.isFirstCookDone() || cooked >= RotationConstants.FIRST_COOK_AT)
+			.busyCooking(false)
+			.build();
+	}
+
+	private static GameSnapshot afterDepositKeep3(GameSnapshot snap)
+	{
+		int keep = Math.max(RotationConstants.FIRST_DUMP_KEEP, snap.getDepositKeep3StopAt());
+		return snap.toBuilder()
+			.cookedFish(keep)
+			.crystalFish(0)
+			.dump16Done(true)
+			.depositingKeep3(false)
+			.build();
+	}
+
+	private static GameSnapshot afterDepositAll(GameSnapshot snap)
+	{
+		int leftover = Math.max(0, snap.getDepositAllStopAt());
+		return snap.toBuilder()
+			.cookedFish(leftover)
+			.crystalFish(0)
+			.depositingAll(false)
+			.needsSpirit(true)
+			.build();
+	}
+
+	private static GameSnapshot afterSpirit(GameSnapshot snap)
+	{
+		return snap.toBuilder()
+			.energy(100)
+			.needsSpirit(false)
+			.build();
+	}
+
 	static HappyKind decide(GameSnapshot snap)
 	{
 		if (snap == null)

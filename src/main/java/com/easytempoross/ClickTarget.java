@@ -46,4 +46,21 @@ class ClickTarget
 	{
 		return object == null && npc == null && tile == null;
 	}
+
+	boolean sameHighlightAs(ClickTarget other)
+	{
+		if (other == null || isEmpty() || other.isEmpty())
+		{
+			return false;
+		}
+		if (npc != null || other.npc != null)
+		{
+			return npc == other.npc;
+		}
+		if (object != null || other.object != null)
+		{
+			return object == other.object;
+		}
+		return tile != null && tile.equals(other.tile);
+	}
 }

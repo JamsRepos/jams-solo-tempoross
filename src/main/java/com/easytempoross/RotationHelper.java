@@ -286,7 +286,6 @@ public class RotationHelper
 		{
 			detail = "Step aside — fire on the crate tile";
 		}
-		boolean skipHighlight = shouldAfk(step, gameSnapshot, busySpirit);
 		WorldView worldView = client.getTopLevelWorldView();
 		WorldPoint dest = destination(target);
 		if (step == RotationStep.SOLO_START && loc != null && dest != null
@@ -311,15 +310,35 @@ public class RotationHelper
 
 		Color color = step.getColor();
 		shortestPathBridge.update(dest, color);
+		HappyKind peek = upcomingKind(step, recover);
+		ClickTarget upcoming = ClickTarget.none();
+		Color upcomingColor = null;
+		if (peek != HappyKind.IDLE)
+		{
+			RotationStep nextStep = stepForHappy(peek);
+			upcoming = targetFor(nextStep, loc);
+			if (upcoming.sameHighlightAs(target))
+			{
+				upcoming = ClickTarget.none();
+			}
+			else if (!upcoming.isEmpty())
+			{
+				upcomingColor = nextStep.getColor();
+			}
+		}
 		currentAction = new HelperAction(
 			step,
 			detail,
 			path,
-			skipHighlight ? null : target.getObject(),
-			skipHighlight ? null : target.getNpc(),
-			skipHighlight ? null : target.getTile(),
+			target.getObject(),
+			target.getNpc(),
+			target.getTile(),
 			color,
-			recover);
+			recover,
+			upcoming.getObject(),
+			upcoming.getNpc(),
+			upcoming.getTile(),
+			upcomingColor);
 
 		updateChimes();
 	}
@@ -906,25 +925,32 @@ public class RotationHelper
 		return null;
 	}
 
-	private static boolean shouldAfk(RotationStep step, GameSnapshot snap, boolean busySpirit)
+	private HappyKind upcomingKind(RotationStep step, boolean recover)
 	{
-		if (snap.isWaveIncoming() && !snap.isTethered())
+		if (recover || !config.clickHighlight().showsNext() || !isActionUnderway(step))
 		{
-			return false;
+			return HappyKind.IDLE;
 		}
-		if (step == RotationStep.FISH && snap.isBusyFishing() && !snap.isDoubleSpotUp())
+		return HappyPathPolicy.peekAfter(gameSnapshot);
+	}
+
+	private boolean isActionUnderway(RotationStep step)
+	{
+		switch (step)
 		{
-			return true;
+			case FISH:
+			case FISH_DOUBLE:
+				return gameSnapshot.isBusyFishing();
+			case COOK:
+				return gameSnapshot.isBusyCooking();
+			case DEPOSIT:
+			case DEPOSIT_KEEP3:
+				return gameSnapshot.isDepositingKeep3() || gameSnapshot.isDepositingAll();
+			case SPIRIT:
+				return isBusySpirit(client.getLocalPlayer());
+			default:
+				return false;
 		}
-		if (step == RotationStep.FISH_DOUBLE)
-		{
-			return false;
-		}
-		if (step == RotationStep.COOK && snap.isBusyCooking() && !snap.isDoubleSpotUp())
-		{
-			return true;
-		}
-		return step == RotationStep.SPIRIT && busySpirit;
 	}
 
 	private static boolean isBusyFishing(Player player)

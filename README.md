@@ -6,7 +6,7 @@ This plugin does not click for you.
 
 ## What you see
 
-- **Next click** — the fishing spot, shrine, totem, crate, pump, or spirit pool you should click is highlighted.
+- **Click highlight** — the fishing spot, shrine, totem, crate, pump, or spirit pool you should click now is outlined. While you are already acting, the following destination can be outlined and labelled Next.
 - **Path** — a line on the floor and/or minimap to where you are going. Fires are pathed around. Turn either line off in settings if you prefer.
 - **Status panel** — the current step, fish counts, buckets, and (optionally) a compact energy / storm / points readout instead of the default game HUD.
 - **Deposit countdown** — a large on-screen count of crate deposits left, with optional audio chimes at 3, 2, 1, and a stop at 0. The stop can also play when other AFK steps finish.
@@ -42,7 +42,7 @@ Everything is on by default except the idle screen tint.
 | Setting | What it does |
 |---|---|
 | Enable helper | Turns the highlights, path, and panel on or off |
-| Highlight next click | Outline on the next object or NPC |
+| Click highlight | This click, this click & next, next only, or off |
 | Path display | Where the path is drawn: floor & minimap, floor only, minimap only, or off |
 | Path source | Plugin lines, or hand the destination to the [Shortest Path](https://runelite.net/plugin-hub/show/shortest-path) plugin coloured by the current step |
 | Show status panel | Step, counts, and reminders |

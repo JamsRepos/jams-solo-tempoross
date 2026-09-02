@@ -13,10 +13,13 @@ public interface EasyTemporossConfig extends Config
 	String SEEN_CHANGELOG_VERSION_KEY = "seenChangelogVersion";
 	String PATH_DISPLAY_KEY = "pathDisplay";
 	String PATH_PROVIDER_KEY = "pathProvider";
+	String CLICK_HIGHLIGHT_KEY = "clickHighlight";
 	/** Replaced by {@link #PATH_DISPLAY_KEY}; still read once by {@link PathDisplayMigration}. */
 	String LEGACY_SHOW_PATH_KEY = "showPath";
 	/** Replaced by {@link #PATH_DISPLAY_KEY}; still read once by {@link PathDisplayMigration}. */
 	String LEGACY_SHOW_MINIMAP_PATH_KEY = "showMinimapPath";
+	/** Replaced by {@link #CLICK_HIGHLIGHT_KEY}; still read once by {@link ClickHighlightMigration}. */
+	String LEGACY_HIGHLIGHT_NEXT_CLICK_KEY = "highlightNextClick";
 
 	@ConfigSection(
 		name = "Helper",
@@ -52,15 +55,15 @@ public interface EasyTemporossConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "highlightNextClick",
-		name = "Highlight next click",
-		description = "Highlight the next object's or NPC's clickbox",
+		keyName = CLICK_HIGHLIGHT_KEY,
+		name = "Click highlight",
+		description = "This click outlines the current target. Next outlines the following destination (labelled Next) while you are already fishing, cooking, depositing, or harpooning the pool.",
 		section = helperSection,
 		position = 1
 	)
-	default boolean highlightNextClick()
+	default ClickHighlight clickHighlight()
 	{
-		return true;
+		return ClickHighlight.THIS_AND_NEXT;
 	}
 
 	@ConfigItem(

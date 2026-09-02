@@ -6,7 +6,7 @@ import java.util.List;
 
 final class Changelog
 {
-	static final String VERSION = "1.0.5";
+	static final String VERSION = "1.0.6";
 
 	static final List<Release> RELEASES = List.of(
 		new Release("1.0.0",
@@ -33,6 +33,11 @@ final class Changelog
 			"The two path checkboxes are now one Path display dropdown: floor & minimap, floor only, minimap only, or off. Your old choice carries over.",
 			"Added a Path source dropdown so the Shortest Path plugin can draw the route instead, coloured by the current step.",
 			"Fixed the minimap path drawing nothing when the floor path was turned off."
+		),
+		new Release("1.0.6",
+			"Click highlight is now a dropdown: this click, this click & next, next only, or off. Your old on/off choice carries over.",
+			"The current-click outline no longer disappears while you fish, cook, or harpoon the pool.",
+			"While an action is underway, the following destination can be outlined and labelled Next."
 		)
 	);
 

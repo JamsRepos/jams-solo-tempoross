@@ -482,6 +482,83 @@ public class HappyPathPolicyTest
 		assertEquals(HappyKind.SPIRIT, HappyPathPolicy.decide(snap));
 	}
 
+	@Test
+	public void peekFishToEightGoesToCook()
+	{
+		GameSnapshot snap = inGame()
+			.rawFish(5)
+			.busyFishing(true)
+			.build();
+		assertEquals(HappyKind.FISH, HappyPathPolicy.decide(snap));
+		assertEquals(HappyKind.COOK, HappyPathPolicy.peekAfter(snap));
+	}
+
+	@Test
+	public void peekCookFullGoesToDeposit()
+	{
+		GameSnapshot snap = inGame()
+			.firstCookDone(true)
+			.rawFish(19)
+			.emptySlots(0)
+			.build();
+		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(snap));
+		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.peekAfter(snap));
+	}
+
+	@Test
+	public void peekDepositKeep3GoesToDouse()
+	{
+		GameSnapshot snap = inGame()
+			.cookedFish(19)
+			.depositingKeep3(true)
+			.depositKeep3StopAt(3)
+			.nearbyFires(2)
+			.build();
+		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.decide(snap));
+		assertEquals(HappyKind.DOUSE, HappyPathPolicy.peekAfter(snap));
+	}
+
+	@Test
+	public void peekDepositAllGoesToSpirit()
+	{
+		GameSnapshot snap = inGame()
+			.cookedFish(19)
+			.dump16Done(true)
+			.douseDone(true)
+			.depositingAll(true)
+			.depositAllStopAt(0)
+			.build();
+		assertEquals(HappyKind.DEPOSIT, HappyPathPolicy.decide(snap));
+		assertEquals(HappyKind.SPIRIT, HappyPathPolicy.peekAfter(snap));
+	}
+
+	@Test
+	public void peekSpiritGoesToFish()
+	{
+		GameSnapshot snap = inGame()
+			.dump16Done(true)
+			.douseDone(true)
+			.needsSpirit(true)
+			.spiritPoolUp(true)
+			.spiritPoolAttackable(true)
+			.energy(40)
+			.build();
+		assertEquals(HappyKind.SPIRIT, HappyPathPolicy.decide(snap));
+		assertEquals(HappyKind.FISH, HappyPathPolicy.peekAfter(snap));
+	}
+
+	@Test
+	public void peekSkipsRecovery()
+	{
+		GameSnapshot snap = inGame()
+			.cookedFish(19)
+			.depositingAll(true)
+			.dump16Done(true)
+			.waveIncoming(true)
+			.build();
+		assertEquals(HappyKind.IDLE, HappyPathPolicy.peekAfter(snap));
+	}
+
 	private static GameSnapshot.GameSnapshotBuilder inGame()
 	{
 		return GameSnapshot.builder()

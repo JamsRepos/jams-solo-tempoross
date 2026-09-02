@@ -74,6 +74,9 @@ public class EasyTemporossPlugin extends Plugin
 	private PathDisplayMigration pathDisplayMigration;
 
 	@Inject
+	private ClickHighlightMigration clickHighlightMigration;
+
+	@Inject
 	private ShortestPathBridge shortestPathBridge;
 
 	@Inject
@@ -83,6 +86,7 @@ public class EasyTemporossPlugin extends Plugin
 	protected void startUp()
 	{
 		pathDisplayMigration.run();
+		clickHighlightMigration.run();
 		rotationHelper.reset();
 		sceneTracker.reset();
 		sceneTracker.scanScene();

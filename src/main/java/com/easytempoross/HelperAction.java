@@ -19,16 +19,20 @@ public class HelperAction
 	WorldPoint highlightTile;
 	Color color;
 	boolean recover;
+	TileObject upcomingObject;
+	NPC upcomingNpc;
+	WorldPoint upcomingTile;
+	Color upcomingColor;
 
 	public static HelperAction idle()
 	{
 		return new HelperAction(RotationStep.IDLE, "Waiting…", Collections.emptyList(),
-			null, null, null, Color.GRAY, false);
+			null, null, null, Color.GRAY, false, null, null, null, null);
 	}
 
 	public static HelperAction of(RotationStep step, String detail, boolean recover)
 	{
 		return new HelperAction(step, detail, Collections.emptyList(),
-			null, null, null, step.getColor(), recover);
+			null, null, null, step.getColor(), recover, null, null, null, null);
 	}
 }

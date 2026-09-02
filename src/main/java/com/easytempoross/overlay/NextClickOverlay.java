@@ -1,5 +1,6 @@
 package com.easytempoross.overlay;
 
+import com.easytempoross.ClickHighlight;
 import com.easytempoross.EasyTemporossConfig;
 import com.easytempoross.HelperAction;
 import com.easytempoross.RotationHelper;
@@ -69,21 +70,18 @@ public class NextClickOverlay extends Overlay
 		{
 			renderPath(graphics, action.getPath(), base);
 		}
-		if (config.highlightNextClick())
+		ClickHighlight mode = config.clickHighlight();
+		if (mode.showsNext())
 		{
-			Color pulse = pulse(base);
-			if (action.getHighlightNpc() != null)
-			{
-				renderNpc(graphics, action.getHighlightNpc(), pulse);
-			}
-			else if (action.getHighlightObject() != null)
-			{
-				renderObject(graphics, action.getHighlightObject(), pulse);
-			}
-			else
-			{
-				renderTile(graphics, action.getHighlightTile(), pulse);
-			}
+			Color upcoming = action.getUpcomingColor() != null ? action.getUpcomingColor() : base;
+			Color fill = new Color(upcoming.getRed(), upcoming.getGreen(), upcoming.getBlue(), 140);
+			renderHighlight(graphics, action.getUpcomingNpc(), action.getUpcomingObject(),
+				action.getUpcomingTile(), fill, "Next");
+		}
+		if (mode.showsThis())
+		{
+			renderHighlight(graphics, action.getHighlightNpc(), action.getHighlightObject(),
+				action.getHighlightTile(), pulse(base), null);
 		}
 		return null;
 	}
@@ -172,6 +170,53 @@ public class NextClickOverlay extends Overlay
 		graphics.setStroke(oldStroke);
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 			oldHint != null ? oldHint : RenderingHints.VALUE_ANTIALIAS_OFF);
+	}
+
+	private void renderHighlight(Graphics2D graphics, NPC npc, TileObject object, WorldPoint tile,
+		Color color, String label)
+	{
+		if (npc != null)
+		{
+			renderNpc(graphics, npc, color);
+			if (label != null)
+			{
+				renderLabel(graphics, npc.getLocalLocation(), npc.getLogicalHeight(), label, color);
+			}
+			return;
+		}
+		if (object != null)
+		{
+			renderObject(graphics, object, color);
+			if (label != null)
+			{
+				renderLabel(graphics, object.getLocalLocation(), 0, label, color);
+			}
+			return;
+		}
+		if (tile != null)
+		{
+			renderTile(graphics, tile, color);
+			if (label != null)
+			{
+				WorldView worldView = client.getTopLevelWorldView();
+				LocalPoint local = worldView == null ? null : LocalPoint.fromWorld(worldView, tile);
+				renderLabel(graphics, local, 0, label, color);
+			}
+		}
+	}
+
+	private void renderLabel(Graphics2D graphics, LocalPoint local, int height, String label, Color color)
+	{
+		if (local == null)
+		{
+			return;
+		}
+		Point text = Perspective.getCanvasTextLocation(client, graphics, local, label, height);
+		if (text != null)
+		{
+			Color readable = new Color(color.getRed(), color.getGreen(), color.getBlue());
+			OverlayUtil.renderTextLocation(graphics, text, label, readable);
+		}
 	}
 
 	private void renderTile(Graphics2D graphics, WorldPoint tile, Color color)
