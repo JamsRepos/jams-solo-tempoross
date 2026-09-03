@@ -44,6 +44,6 @@ public class InventorySnapshot
 
 	public boolean toolsReady()
 	{
-		return hasHarpoon && hasHammerTool() && hasRopeOrOutfit() && getBuckets() >= RotationConstants.BUCKETS_NEEDED;
+		return hasHarpoon && hasRopeOrOutfit() && getBuckets() >= RotationConstants.BUCKETS_NEEDED;
 	}
 }

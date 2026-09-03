@@ -235,10 +235,6 @@ final class HappyPathPolicy
 		{
 			return HappyKind.PREP_ROPE;
 		}
-		if (!snap.isHasHammer())
-		{
-			return HappyKind.PREP_HAMMER;
-		}
 		if (snap.getBuckets() < RotationConstants.BUCKETS_NEEDED)
 		{
 			return HappyKind.PREP_BUCKETS;

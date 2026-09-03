@@ -22,6 +22,21 @@ public class HappyPathPolicyTest
 	}
 
 	@Test
+	public void dockSoloStartWithoutHammer()
+	{
+		GameSnapshot snap = GameSnapshot.builder()
+			.atUnkah(true)
+			.hasHammer(false)
+			.hasRopeOrOutfit(true)
+			.hasHarpoon(true)
+			.waterBuckets(4)
+			.energy(-1)
+			.intensity(-1)
+			.build();
+		assertEquals(HappyKind.SOLO_START, HappyPathPolicy.decide(snap));
+	}
+
+	@Test
 	public void infernalCookedCountsTowardFirstEight()
 	{
 		GameSnapshot snap = inGame()

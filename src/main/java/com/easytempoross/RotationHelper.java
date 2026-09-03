@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
 import net.runelite.api.Player;
-import net.runelite.api.SoundEffectID;
+import net.runelite.api.Preferences;
 import net.runelite.api.TileObject;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
@@ -58,6 +58,7 @@ public class RotationHelper
 	private int depositAllStopAt;
 	private int lastDepositsLeft;
 	private RotationStep lastChimeStep = RotationStep.IDLE;
+	private boolean lastDoubleFishWanted;
 	private boolean needsSpirit;
 	private boolean sawSpiritPool;
 	private boolean sawSpiritHarpoon;
@@ -110,6 +111,7 @@ public class RotationHelper
 		depositAllStopAt = 0;
 		lastDepositsLeft = 0;
 		lastChimeStep = RotationStep.IDLE;
+		lastDoubleFishWanted = false;
 		needsSpirit = false;
 		sawSpiritPool = false;
 		sawSpiritHarpoon = false;
@@ -261,6 +263,7 @@ public class RotationHelper
 			pathRouter.reset();
 			shortestPathBridge.clear();
 			lastChimeStep = RotationStep.IDLE;
+			lastDoubleFishWanted = false;
 			return;
 		}
 
@@ -343,7 +346,7 @@ public class RotationHelper
 		updateChimes();
 	}
 
-	/** Counts crate loads down out loud, and optionally bells when other AFK steps finish. */
+	/** Counts crate loads down out loud, optionally bells when AFK steps finish, and cues the double spot. */
 	private void updateChimes()
 	{
 		int left = getDepositActionsLeft();
@@ -352,11 +355,11 @@ public class RotationHelper
 		{
 			if (left == 0)
 			{
-				playPluginSound(SoundEffectID.TOWN_CRIER_BELL_DONG);
+				playPluginSound(config.stopChimeSound());
 			}
 			else if (left <= RotationConstants.DEPOSIT_CHIME_FROM)
 			{
-				playPluginSound(SoundEffectID.UI_BOOP);
+				playPluginSound(config.countdownTickSound());
 			}
 		}
 		lastDepositsLeft = left;
@@ -364,19 +367,48 @@ public class RotationHelper
 		RotationStep step = currentAction.getStep();
 		if (chiming && ChimePolicy.shouldPlayActionStop(lastChimeStep, step, config.chimeMode()))
 		{
-			playPluginSound(SoundEffectID.TOWN_CRIER_BELL_DONG);
+			playPluginSound(config.stopChimeSound());
 		}
 		lastChimeStep = step;
+
+		boolean doubleWanted = ChimePolicy.wantsDoubleFish(
+			config.doubleFishChime(),
+			gameSnapshot.isInMinigame(),
+			step,
+			gameSnapshot.getEmptySlots());
+		if (ChimePolicy.shouldPlayDoubleFish(
+			config.doubleFishChime(),
+			gameSnapshot.isInMinigame(),
+			step,
+			gameSnapshot.getEmptySlots(),
+			lastDoubleFishWanted))
+		{
+			playPluginSound(config.doubleFishSound());
+		}
+		lastDoubleFishWanted = doubleWanted;
 	}
 
-	private void playPluginSound(int soundId)
+	/**
+	 * playSoundEffect only honours the volume argument when game SFX are muted; otherwise it uses
+	 * Preferences. Temporarily set Preferences to our volume so the Sounds slider actually works.
+	 */
+	private void playPluginSound(PluginSound sound)
 	{
+		if (sound == null)
+		{
+			return;
+		}
 		int volume = config.soundVolume();
 		if (volume <= 0)
 		{
 			return;
 		}
+		int soundId = sound.getSoundId();
+		Preferences preferences = client.getPreferences();
+		int previousVolume = preferences.getSoundEffectVolume();
+		preferences.setSoundEffectVolume(volume);
 		client.playSoundEffect(soundId, volume);
+		preferences.setSoundEffectVolume(previousVolume);
 	}
 
 	private void clearGame()
@@ -396,6 +428,7 @@ public class RotationHelper
 		depositAllStopAt = 0;
 		lastDepositsLeft = 0;
 		lastChimeStep = RotationStep.IDLE;
+		lastDoubleFishWanted = false;
 		needsSpirit = false;
 		sawSpiritPool = false;
 		sawSpiritHarpoon = false;
@@ -834,11 +867,6 @@ public class RotationHelper
 					return objectOrTile(crateOrDock(sceneTracker.ropeCrate(workArea),
 						sceneTracker.getRopeCrate()), null);
 				}
-				if (!snapshot.hasHammerTool())
-				{
-					return objectOrTile(crateOrDock(sceneTracker.hammerCrate(workArea),
-						sceneTracker.getHammerCrate()), null);
-				}
 				return objectOrTile(crateOrDock(sceneTracker.bucketCrate(workArea),
 					sceneTracker.getBucketCrate()), null);
 			case SOLO_START:
@@ -1101,8 +1129,6 @@ public class RotationHelper
 				return "Bring a harpoon (equip or inventory)";
 			case PREP_ROPE:
 				return "Bring a rope, or wear full Spirit Angler";
-			case PREP_HAMMER:
-				return "Bring a hammer or Imcando hammer";
 			case PREP_BUCKETS:
 				return "Bring " + RotationConstants.BUCKETS_NEEDED + " buckets";
 			case SOLO_START:

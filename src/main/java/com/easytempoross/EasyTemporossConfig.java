@@ -42,6 +42,14 @@ public interface EasyTemporossConfig extends Config
 	)
 	String reminderSection = "reminders";
 
+	@ConfigSection(
+		name = "Advanced",
+		description = "Pick which game sound plays for each chime",
+		position = 3,
+		closedByDefault = true
+	)
+	String advancedSection = "advanced";
+
 	@ConfigItem(
 		keyName = "enableHelper",
 		name = "Enable helper",
@@ -175,17 +183,65 @@ public interface EasyTemporossConfig extends Config
 		return ChimeMode.ALL_ACTIONS;
 	}
 
+	@ConfigItem(
+		keyName = "doubleFishChime",
+		name = "Double-fish chime",
+		description = "Play a soft cue when the helper wants the double fishing spot and your inventory still has space",
+		section = soundsSection,
+		position = 2
+	)
+	default boolean doubleFishChime()
+	{
+		return true;
+	}
+
 	@Range(max = 127)
 	@ConfigItem(
 		keyName = "soundVolume",
 		name = "Sound volume",
-		description = "Volume for plugin chimes. This does not change the game's own sound-effect slider.",
+		description = "Volume for plugin chimes (0–127). Independent of the game's sound-effect slider.",
 		section = soundsSection,
-		position = 2
+		position = 3
 	)
 	default int soundVolume()
 	{
-		return 64;
+		return 32;
+	}
+
+	@ConfigItem(
+		keyName = "countdownTickSound",
+		name = "Countdown tick sound",
+		description = "Sound at 3, 2, and 1 deposits left",
+		section = advancedSection,
+		position = 0
+	)
+	default PluginSound countdownTickSound()
+	{
+		return PluginSound.UI_BOOP;
+	}
+
+	@ConfigItem(
+		keyName = "stopChimeSound",
+		name = "Stop chime sound",
+		description = "Sound when the deposit countdown hits 0, and for Final chime (All Actions)",
+		section = advancedSection,
+		position = 1
+	)
+	default PluginSound stopChimeSound()
+	{
+		return PluginSound.BELL_DONG;
+	}
+
+	@ConfigItem(
+		keyName = "doubleFishSound",
+		name = "Double-fish sound",
+		description = "Sound when the helper wants the double fishing spot",
+		section = advancedSection,
+		position = 2
+	)
+	default PluginSound doubleFishSound()
+	{
+		return PluginSound.GE_DING;
 	}
 
 	@Range(min = 3, max = 120)

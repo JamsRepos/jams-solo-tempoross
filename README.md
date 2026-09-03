@@ -32,7 +32,6 @@ Solo-start, then:
 
 - A **harpoon** (equipped or in inventory)
 - A **rope**, or the full **Spirit Angler** outfit
-- A **hammer**, or an **Imcando hammer**
 - **4 buckets** (empty or water)
 
 ## Settings
@@ -52,7 +51,9 @@ Everything is on by default except the idle screen tint.
 | Hide fishing and cooking overlays | Hide RuneLite's fishing/cooking stat overlays during a game |
 | Countdown chime | Audio at 3, 2, 1 deposits left, then a bell at 0 |
 | Final chime | All Actions also bells when fishing, cooking, filling, or the spirit pool finishes. Deposit Only keeps the bell on the crate countdown |
-| Sound volume | Plugin chime volume (does not change the game's sound-effect slider) |
+| Double-fish chime | Soft cue when the helper wants the double spot and inventory still has space |
+| Sound volume | Plugin chime volume (independent of the game's sound-effect slider) |
+| Advanced | Pick which game sound plays for countdown ticks, the stop chime, and the double-fish cue |
 | Idle reminder | How long you can stand still before a warning |
 | Idle screen tint | Optional faint tint when idle |
 

@@ -22,10 +22,6 @@ final class RecoveryPolicy
 			return snap.isTotemBroken() ? RecoveryKind.WAVE_REPAIR : RecoveryKind.WAVE_TETHER;
 		}
 
-		if (!snap.isHasHammer())
-		{
-			return RecoveryKind.LOST_HAMMER;
-		}
 		if (!snap.isHasRopeOrOutfit())
 		{
 			return RecoveryKind.LOST_ROPE;

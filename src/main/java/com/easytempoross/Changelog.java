@@ -6,7 +6,7 @@ import java.util.List;
 
 final class Changelog
 {
-	static final String VERSION = "1.0.6";
+	static final String VERSION = "1.0.7";
 
 	static final List<Release> RELEASES = List.of(
 		new Release("1.0.0",
@@ -38,6 +38,12 @@ final class Changelog
 			"Click highlight is now a dropdown: this click, this click & next, next only, or off. Your old on/off choice carries over.",
 			"The current-click outline no longer disappears while you fish, cook, or harpoon the pool.",
 			"While an action is underway, the following destination can be outlined and labelled Next."
+		),
+		new Release("1.0.7",
+			"Hammer is no longer required for this rotation — dock prep and mid-game recovery skip it.",
+			"Fixed Sound volume so the slider actually changes plugin chime loudness (and lowered the default).",
+			"Added a Double-fish chime when the helper wants the double spot and inventory still has space.",
+			"Advanced settings let you pick the sound for countdown ticks, the stop chime, and the double-fish cue."
 		)
 	);
 

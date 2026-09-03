@@ -52,4 +52,26 @@ public class ChimePolicyTest
 		assertTrue(ChimePolicy.shouldPlayActionStop(
 			RotationStep.FISH, RotationStep.TETHER, ChimeMode.ALL_ACTIONS));
 	}
+
+	@Test
+	public void doubleFishPlaysOnEdgeWhenInventoryHasSpace()
+	{
+		assertTrue(ChimePolicy.shouldPlayDoubleFish(
+			true, true, RotationStep.FISH_DOUBLE, 3, false));
+		assertFalse(ChimePolicy.shouldPlayDoubleFish(
+			true, true, RotationStep.FISH_DOUBLE, 3, true));
+	}
+
+	@Test
+	public void doubleFishSkipsWhenFullOrNotDoubleOrDisabled()
+	{
+		assertFalse(ChimePolicy.shouldPlayDoubleFish(
+			true, true, RotationStep.FISH_DOUBLE, 0, false));
+		assertFalse(ChimePolicy.shouldPlayDoubleFish(
+			true, true, RotationStep.FISH, 3, false));
+		assertFalse(ChimePolicy.shouldPlayDoubleFish(
+			false, true, RotationStep.FISH_DOUBLE, 3, false));
+		assertFalse(ChimePolicy.shouldPlayDoubleFish(
+			true, false, RotationStep.FISH_DOUBLE, 3, false));
+	}
 }

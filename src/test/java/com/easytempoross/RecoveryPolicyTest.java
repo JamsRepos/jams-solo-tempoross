@@ -29,12 +29,12 @@ public class RecoveryPolicyTest
 	}
 
 	@Test
-	public void lostHammerGoesToCrate()
+	public void missingHammerDoesNotRecover()
 	{
 		GameSnapshot snap = inGame()
 			.hasHammer(false)
 			.build();
-		assertEquals(RecoveryKind.LOST_HAMMER, RecoveryPolicy.decide(snap));
+		assertEquals(RecoveryKind.NONE, RecoveryPolicy.decide(snap));
 	}
 
 	@Test
