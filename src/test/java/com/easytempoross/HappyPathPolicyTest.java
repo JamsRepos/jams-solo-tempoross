@@ -96,6 +96,18 @@ public class HappyPathPolicyTest
 	}
 
 	@Test
+	public void busyCookingHoldsCookThroughLastRawFish()
+	{
+		GameSnapshot snap = inGame()
+			.rawFish(0)
+			.cookedFish(8)
+			.doubleSpotUp(true)
+			.busyCooking(true)
+			.build();
+		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(snap));
+	}
+
+	@Test
 	public void busyCookingStillPeeksToDoubleAfterCook()
 	{
 		GameSnapshot snap = inGame()

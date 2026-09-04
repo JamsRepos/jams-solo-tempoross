@@ -126,7 +126,7 @@ final class HappyPathPolicy
 		}
 
 		// Finish the cook animation before chasing a double that appeared mid-cook.
-		if (snap.isBusyCooking() && snap.getRawFish() > 0)
+		if (snap.isBusyCooking())
 		{
 			return HappyKind.COOK;
 		}
