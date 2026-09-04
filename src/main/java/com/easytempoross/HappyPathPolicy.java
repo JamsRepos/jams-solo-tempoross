@@ -125,6 +125,12 @@ final class HappyPathPolicy
 			return HappyKind.LEAVE_GAME;
 		}
 
+		// Finish the cook animation before chasing a double that appeared mid-cook.
+		if (snap.isBusyCooking())
+		{
+			return HappyKind.COOK;
+		}
+
 		if (snap.isOnShip() && snap.getEmptyBuckets() > 0 && snap.getTotalFish() == 0
 			&& !snap.isDump16Done())
 		{

@@ -18,6 +18,7 @@ import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.GroundObjectDespawned;
 import net.runelite.api.events.GroundObjectSpawned;
+import net.runelite.api.events.NpcChanged;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.VarbitChanged;
@@ -185,6 +186,13 @@ public class EasyTemporossPlugin extends Plugin
 	@Subscribe
 	public void onNpcSpawned(NpcSpawned event)
 	{
+		sceneTracker.onNpcSpawn(event.getNpc());
+	}
+
+	@Subscribe
+	public void onNpcChanged(NpcChanged event)
+	{
+		// Same index, new id — e.g. a normal spot transforms into the SPECIAL double.
 		sceneTracker.onNpcSpawn(event.getNpc());
 	}
 
