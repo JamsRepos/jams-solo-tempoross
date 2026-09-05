@@ -200,6 +200,7 @@ public class RotationHelper
 		boolean busyCooking = isBusyCooking(player);
 		boolean victory = sceneTracker.hasVictoryHost();
 		int nearbyFires = sceneTracker.fireCountOnSide(workArea);
+		boolean doubleSpotUp = sceneTracker.doubleSpot(loc, workArea) != null;
 		if (activeMinigame)
 		{
 			updateCookFlag(snapshot);
@@ -245,7 +246,7 @@ public class RotationHelper
 			.needsSpirit(needsSpirit)
 			.spiritCycles(spiritCycles)
 			.victory(victory)
-			.doubleSpotUp(sceneTracker.doubleSpot(loc, workArea) != null)
+			.doubleSpotUp(doubleSpotUp)
 			.busyFishing(busyFishing)
 			.busyCooking(busyCooking)
 			.hudVisible(gameHud.isPresent())
@@ -596,11 +597,7 @@ public class RotationHelper
 
 		if (depositingKeep3)
 		{
-			if (raw > 0)
-			{
-				depositingKeep3 = false;
-			}
-			else if (dumpable <= depositKeep3StopAt)
+			if (dumpable <= depositKeep3StopAt)
 			{
 				depositingKeep3 = false;
 				dump16Done = true;
@@ -616,11 +613,7 @@ public class RotationHelper
 
 		if (depositingAll)
 		{
-			if (raw > 0)
-			{
-				depositingAll = false;
-			}
-			else if (dumpable <= depositAllStopAt)
+			if (dumpable <= depositAllStopAt)
 			{
 				depositingAll = false;
 				needsSpirit = true;
@@ -881,6 +874,12 @@ public class RotationHelper
 			case LEAVE_SHIP:
 				return leaveShipTarget(from);
 			case FISH:
+				NPC fish = sceneTracker.nearestFishingSpot(from, false, workArea);
+				if (fish != null)
+				{
+					return ClickTarget.ofNpc(fish);
+				}
+				return shrineTarget(from);
 			case FISH_DOUBLE:
 				NPC spot = sceneTracker.nearestFishingSpot(from, true, workArea);
 				if (spot != null)

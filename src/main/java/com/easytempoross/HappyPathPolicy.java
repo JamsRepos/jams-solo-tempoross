@@ -143,14 +143,13 @@ final class HappyPathPolicy
 			return HappyKind.SPIRIT;
 		}
 
-		if (snap.isDepositingKeep3() && snap.getDumpableFish() > snap.getDepositKeep3StopAt()
-			&& snap.getRawFish() == 0)
+		if (snap.isDepositingKeep3() && snap.getDumpableFish() > snap.getDepositKeep3StopAt())
 		{
+			// Stay on the crate for the whole load — raw fish must not yank back to the shrine.
 			return HappyKind.DEPOSIT_KEEP3;
 		}
 
-		if (snap.isDepositingAll() && snap.getDumpableFish() > snap.getDepositAllStopAt()
-			&& snap.getRawFish() == 0)
+		if (snap.isDepositingAll() && snap.getDumpableFish() > snap.getDepositAllStopAt())
 		{
 			return HappyKind.DEPOSIT;
 		}
@@ -174,10 +173,10 @@ final class HappyPathPolicy
 		{
 			if (snap.getTotalFish() < RotationConstants.FIRST_COOK_AT)
 			{
-				return snap.isDoubleSpotUp() && snap.getNearbyFires() <= 0
+				return snap.isDoubleSpotUp()
 					? HappyKind.FISH_DOUBLE : HappyKind.FISH;
 			}
-			if (snap.isDoubleSpotUp() && snap.getNearbyFires() <= 0)
+			if (snap.isDoubleSpotUp())
 			{
 				return HappyKind.FISH_DOUBLE;
 			}
@@ -206,15 +205,14 @@ final class HappyPathPolicy
 		}
 
 		if (snap.isDoubleSpotUp() && snap.getEmptySlots() > 0
-			&& snap.getTotalFish() < RotationConstants.INVENTORY_TARGET
-			&& snap.getNearbyFires() <= 0)
+			&& snap.getTotalFish() < RotationConstants.INVENTORY_TARGET)
 		{
 			return HappyKind.FISH_DOUBLE;
 		}
 
 		if (snap.getTotalFish() < fishTarget(snap))
 		{
-			return snap.isDoubleSpotUp() && snap.getNearbyFires() <= 0
+			return snap.isDoubleSpotUp()
 				? HappyKind.FISH_DOUBLE : HappyKind.FISH;
 		}
 
@@ -262,8 +260,7 @@ final class HappyPathPolicy
 			return true;
 		}
 		if (snap.isDoubleSpotUp() && snap.getEmptySlots() > 0
-			&& snap.getTotalFish() < RotationConstants.INVENTORY_TARGET
-			&& snap.getNearbyFires() <= 0)
+			&& snap.getTotalFish() < RotationConstants.INVENTORY_TARGET)
 		{
 			return false;
 		}

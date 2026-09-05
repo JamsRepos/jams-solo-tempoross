@@ -72,7 +72,34 @@ class InstanceCoords
 
 	boolean isNorthShore(WorldPoint scene)
 	{
-		return WorkArea.isNorthShore(template(scene));
+		return isNorthShore(scene, null);
+	}
+
+	/**
+	 * North-shore test with a LocalPoint fallback when the scene tile cannot be mapped through
+	 * {@link LocalPoint#fromWorld} (common for far-edge fishing spots).
+	 */
+	boolean isNorthShore(WorldPoint scene, LocalPoint local)
+	{
+		return WorkArea.isNorthShore(mapToTemplate(scene, local));
+	}
+
+	/**
+	 * Maps a scene tile to its world-map template tile. Prefers the entity's {@link LocalPoint}
+	 * when available — {@link LocalPoint#fromWorld} can return a wrong non-null mapping for
+	 * far-edge tiles, which would skip any later local fallback.
+	 */
+	WorldPoint mapToTemplate(WorldPoint scene, LocalPoint local)
+	{
+		if (local != null)
+		{
+			WorldPoint fromLocal = WorldPoint.fromLocalInstance(client, local);
+			if (fromLocal != null)
+			{
+				return fromLocal;
+			}
+		}
+		return template(scene);
 	}
 
 	private WorldPoint resolve(WorldPoint template)
