@@ -25,7 +25,7 @@ Solo-start, then:
 3. Tether the totem when a colossal wave closes in.
 4. Deposit **16** cooked fish (dump the whole first batch).
 5. Douse 3–4 fires.
-6. Fish 16 more (doubles first), cook, deposit all 19.
+6. Fish 19 more (doubles first), cook, deposit all 19.
 7. Harpoon the spirit pool until energy is back to 100%.
 8. Fish and cook 19, deposit 19, spirit pool to 100%. Repeat once more, then spirit pool until Tempoross dies.
 9. Refill buckets at the dock tap, Leave, Solo-start the next game.
