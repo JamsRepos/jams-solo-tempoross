@@ -2,10 +2,12 @@ package com.easytempoross;
 
 import com.google.inject.Provides;
 import com.easytempoross.overlay.DepositCountdownOverlay;
+import com.easytempoross.overlay.DepositFireTintOverlay;
 import com.easytempoross.overlay.IdleTintOverlay;
 import com.easytempoross.overlay.NextClickOverlay;
 import com.easytempoross.overlay.PathMinimapOverlay;
 import com.easytempoross.overlay.StatusOverlay;
+import com.easytempoross.overlay.StormHurryOverlay;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.GameState;
@@ -57,6 +59,12 @@ public class EasyTemporossPlugin extends Plugin
 	private DepositCountdownOverlay depositCountdownOverlay;
 
 	@Inject
+	private StormHurryOverlay stormHurryOverlay;
+
+	@Inject
+	private DepositFireTintOverlay depositFireTintOverlay;
+
+	@Inject
 	private IdleTintOverlay idleTintOverlay;
 
 	@Inject
@@ -95,6 +103,8 @@ public class EasyTemporossPlugin extends Plugin
 		overlayManager.add(pathMinimapOverlay);
 		overlayManager.add(statusOverlay);
 		overlayManager.add(depositCountdownOverlay);
+		overlayManager.add(stormHurryOverlay);
+		overlayManager.add(depositFireTintOverlay);
 		overlayManager.add(idleTintOverlay);
 		clientThread.invoke(changelogService::maybeAnnounce);
 		log.debug("Jam's Solo Tempoross started");
@@ -107,6 +117,8 @@ public class EasyTemporossPlugin extends Plugin
 		overlayManager.remove(pathMinimapOverlay);
 		overlayManager.remove(statusOverlay);
 		overlayManager.remove(depositCountdownOverlay);
+		overlayManager.remove(stormHurryOverlay);
+		overlayManager.remove(depositFireTintOverlay);
 		overlayManager.remove(idleTintOverlay);
 		rotationHelper.reset();
 		sceneTracker.reset();

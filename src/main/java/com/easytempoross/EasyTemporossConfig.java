@@ -195,13 +195,25 @@ public interface EasyTemporossConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "depositFireChime",
+		name = "Deposit fire alert",
+		description = "Play a sound when a fire forces you off the crate tile during a deposit",
+		section = soundsSection,
+		position = 3
+	)
+	default boolean depositFireChime()
+	{
+		return true;
+	}
+
 	@Range(max = 127)
 	@ConfigItem(
 		keyName = "soundVolume",
 		name = "Sound volume",
 		description = "Volume for plugin chimes (0–127). Independent of the game's sound-effect slider.",
 		section = soundsSection,
-		position = 3
+		position = 4
 	)
 	default int soundVolume()
 	{
@@ -242,6 +254,18 @@ public interface EasyTemporossConfig extends Config
 	default PluginSound doubleFishSound()
 	{
 		return PluginSound.GE_DING;
+	}
+
+	@ConfigItem(
+		keyName = "depositFireSound",
+		name = "Deposit fire sound",
+		description = "Sound when a fire forces you off the crate tile",
+		section = advancedSection,
+		position = 3
+	)
+	default PluginSound depositFireSound()
+	{
+		return PluginSound.PRAYER_TWINKLE;
 	}
 
 	@Range(min = 3, max = 120)
