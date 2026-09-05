@@ -6,7 +6,7 @@ import java.util.List;
 
 final class Changelog
 {
-	static final String VERSION = "1.0.7";
+	static final String VERSION = "1.0.9";
 
 	static final List<Release> RELEASES = List.of(
 		new Release("1.0.0",
@@ -44,6 +44,13 @@ final class Changelog
 			"Fixed Sound volume so the slider actually changes plugin chime loudness (and lowered the default).",
 			"Added a Double-fish chime when the helper wants the double spot and inventory still has space.",
 			"Advanced settings let you pick the sound for countdown ticks, the stop chime, and the double-fish cue."
+		),
+		new Release("1.0.8",
+			"Far-side double fishing spots are detected by NPC id even when Harpoon actions are not loaded yet.",
+			"Stops sending you to a double while you are already cooking; after Tempoross retreats, the helper goes to refill/leave instead of fishing."
+		),
+		new Release("1.0.9",
+			"Rolled back the 1.0.8 double-spot detection changes after they caused delayed action updates and wrong cook/deposit overlays."
 		)
 	);
 
