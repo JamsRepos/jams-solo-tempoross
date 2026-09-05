@@ -168,7 +168,7 @@ public class SceneTracker
 		int bestDist = Integer.MAX_VALUE;
 		for (NPC npc : liveNpcs())
 		{
-			if (!TemporossIds.isHarpoonSpot(npc) || !isOurFishingSpot(npc))
+			if (!isFishableSpot(npc, preferDouble) || !isOurFishingSpot(npc))
 			{
 				continue;
 			}
@@ -192,8 +192,9 @@ public class SceneTracker
 		int bestDist = Integer.MAX_VALUE;
 		for (NPC npc : liveNpcs())
 		{
+			// SPECIAL id alone — do not require Harpoon actions (far NPCs often lack them).
 			if (npc == null || npc.getWorldLocation() == null || !TemporossIds.isDoubleSpot(npc.getId())
-				|| !TemporossIds.isHarpoonSpot(npc) || !isOurFishingSpot(npc))
+				|| !isOurFishingSpot(npc))
 			{
 				continue;
 			}
@@ -775,11 +776,45 @@ public class SceneTracker
 		return area == null || coords.isNorthShore(point);
 	}
 
+	/**
+	 * Regular north spots need a Harpoon action. The SPECIAL double is accepted by id alone so
+	 * far-edge spots without loaded actions still win when preferDouble is on.
+	 */
+	private static boolean isFishableSpot(NPC npc, boolean preferDouble)
+	{
+		if (npc == null)
+		{
+			return false;
+		}
+		if (preferDouble && TemporossIds.isDoubleSpot(npc.getId()))
+		{
+			return true;
+		}
+		return TemporossIds.isHarpoonSpot(npc);
+	}
+
 	private boolean isOurFishingSpot(NPC npc)
 	{
-		return npc != null && npc.getWorldLocation() != null
-			&& !TemporossIds.isSouthFishingSpot(npc.getId())
-			&& coords.isNorthShore(npc.getWorldLocation());
+		if (npc == null || npc.getWorldLocation() == null || TemporossIds.isSouthFishingSpot(npc.getId()))
+		{
+			return false;
+		}
+		WorldPoint mapped = coords.mapToTemplate(npc.getWorldLocation(), npc.getLocalLocation());
+		if (mapped != null && WorkArea.isNorthShore(mapped))
+		{
+			return true;
+		}
+		if (!TemporossIds.isDoubleSpot(npc.getId()))
+		{
+			return false;
+		}
+		// Far SPECIAL tiles often map wrong or not at all — trust proximity to the north shrine.
+		if (mapped == null)
+		{
+			return true;
+		}
+		WorldPoint north = coords.scene(RotationConstants.NORTH_SHRINE);
+		return north != null && npc.getWorldLocation().distanceTo(north) <= RotationConstants.FIRE_ISLAND_TILES * 2;
 	}
 
 	private boolean sameCoveSide(WorldPoint from, WorldPoint point)

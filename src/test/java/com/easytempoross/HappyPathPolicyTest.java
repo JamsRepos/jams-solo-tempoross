@@ -97,7 +97,7 @@ public class HappyPathPolicyTest
 	}
 
 	@Test
-	public void doubleSpotOnFireIslandIsIgnored()
+	public void doubleSpotBeatsFiresOnIsland()
 	{
 		GameSnapshot snap = inGame()
 			.rawFish(8)
@@ -108,7 +108,7 @@ public class HappyPathPolicyTest
 			.nearbyFires(3)
 			.energy(40)
 			.build();
-		assertEquals(HappyKind.FISH, HappyPathPolicy.decide(snap));
+		assertEquals(HappyKind.FISH_DOUBLE, HappyPathPolicy.decide(snap));
 	}
 
 	@Test
@@ -162,6 +162,29 @@ public class HappyPathPolicyTest
 			.nearbyFires(2)
 			.build();
 		assertEquals(HappyKind.DOUSE, HappyPathPolicy.decide(done));
+	}
+
+	@Test
+	public void midDepositKeepsDepositEvenWithRawFish()
+	{
+		GameSnapshot keep3 = inGame()
+			.cookedFish(15)
+			.rawFish(4)
+			.depositingKeep3(true)
+			.depositKeep3StopAt(3)
+			.build();
+		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.decide(keep3));
+
+		GameSnapshot all = inGame()
+			.cookedFish(15)
+			.rawFish(4)
+			.dump16Done(true)
+			.douseDone(true)
+			.depositingAll(true)
+			.depositAllStopAt(0)
+			.energy(40)
+			.build();
+		assertEquals(HappyKind.DEPOSIT, HappyPathPolicy.decide(all));
 	}
 
 	@Test

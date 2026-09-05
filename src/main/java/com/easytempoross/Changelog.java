@@ -6,7 +6,7 @@ import java.util.List;
 
 final class Changelog
 {
-	static final String VERSION = "1.0.9";
+	static final String VERSION = "1.0.10";
 
 	static final List<Release> RELEASES = List.of(
 		new Release("1.0.0",
@@ -51,6 +51,12 @@ final class Changelog
 		),
 		new Release("1.0.9",
 			"Rolled back the 1.0.8 double-spot detection changes after they caused delayed action updates and wrong cook/deposit overlays."
+		),
+		new Release("1.0.10",
+			"Far-side double spots are detected by NPC id again (without the 1.0.8 cook-hold / victory-chat changes).",
+			"Staying on Deposit for the whole crate load so leftover raw fish cannot flip the helper back to Cook mid-dump.",
+			"Normal Fish paths no longer stealth-route to a double (blue line); yellow + the double chime wait until the helper actually wants FISH_DOUBLE.",
+			"Doubles are no longer ignored while island fires are burning — that was delaying the yellow path and chime until fires cleared."
 		)
 	);
 
