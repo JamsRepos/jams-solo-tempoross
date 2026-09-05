@@ -198,7 +198,7 @@ public class RotationHelper
 		boolean busyFishing = isBusyFishing(player);
 		boolean busySpirit = isBusySpirit(player);
 		boolean busyCooking = isBusyCooking(player);
-		boolean victory = sceneTracker.hasVictoryHost() || waveTracker.isVictory();
+		boolean victory = sceneTracker.hasVictoryHost();
 		int nearbyFires = sceneTracker.fireCountOnSide(workArea);
 		if (activeMinigame)
 		{
