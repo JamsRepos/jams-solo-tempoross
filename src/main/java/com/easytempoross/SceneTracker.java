@@ -809,10 +809,6 @@ public class SceneTracker
 			return false;
 		}
 		// Far SPECIAL tiles often map wrong or not at all — trust proximity to the north shrine.
-		if (mapped == null)
-		{
-			return true;
-		}
 		WorldPoint north = coords.scene(RotationConstants.NORTH_SHRINE);
 		return north != null && npc.getWorldLocation().distanceTo(north) <= RotationConstants.FIRE_ISLAND_TILES * 2;
 	}

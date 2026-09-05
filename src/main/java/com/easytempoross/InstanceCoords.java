@@ -85,17 +85,21 @@ class InstanceCoords
 	}
 
 	/**
-	 * Maps a scene tile to its world-map template tile, trying the NPC/object local point when
-	 * the world tile is outside the usual fromWorld lookup.
+	 * Maps a scene tile to its world-map template tile. Prefers the entity's {@link LocalPoint}
+	 * when available — {@link LocalPoint#fromWorld} can return a wrong non-null mapping for
+	 * far-edge tiles, which would skip any later local fallback.
 	 */
 	WorldPoint mapToTemplate(WorldPoint scene, LocalPoint local)
 	{
-		WorldPoint mapped = template(scene);
-		if (mapped != null)
+		if (local != null)
 		{
-			return mapped;
+			WorldPoint fromLocal = WorldPoint.fromLocalInstance(client, local);
+			if (fromLocal != null)
+			{
+				return fromLocal;
+			}
 		}
-		return local == null ? null : WorldPoint.fromLocalInstance(client, local);
+		return template(scene);
 	}
 
 	private WorldPoint resolve(WorldPoint template)
