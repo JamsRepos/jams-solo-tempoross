@@ -6,7 +6,7 @@ import java.util.List;
 
 final class Changelog
 {
-	static final String VERSION = "1.0.10";
+	static final String VERSION = "1.0.11";
 
 	static final List<Release> RELEASES = List.of(
 		new Release("1.0.0",
@@ -57,6 +57,11 @@ final class Changelog
 			"Staying on Deposit for the whole crate load so leftover raw fish cannot flip the helper back to Cook mid-dump.",
 			"Normal Fish paths no longer stealth-route to a double (blue line); yellow + the double chime wait until the helper actually wants FISH_DOUBLE.",
 			"Doubles are no longer ignored while island fires are burning — that was delaying the yellow path and chime until fires cleared."
+		),
+		new Release("1.0.11",
+			"First crate load is always catch 16 / deposit 16 so you reach the ship before island fires.",
+			"At 90% storm before the first dump, the Storm bar flashes and a large HURRY overlay warns you to dump before the game ends.",
+			"When a fire forces you off the crate tile during a deposit, a chime plays and the screen tints until you step onto the safe tile."
 		)
 	);
 

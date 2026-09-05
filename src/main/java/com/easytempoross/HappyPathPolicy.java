@@ -176,7 +176,10 @@ final class HappyPathPolicy
 				return snap.isDoubleSpotUp()
 					? HappyKind.FISH_DOUBLE : HappyKind.FISH;
 			}
-			if (snap.isDoubleSpotUp())
+			// Doubles can delay the shrine cook until the first batch is full — not past it.
+			if (snap.isDoubleSpotUp()
+				&& snap.getEmptySlots() > 0
+				&& snap.getTotalFish() < RotationConstants.FIRST_BATCH_TARGET)
 			{
 				return HappyKind.FISH_DOUBLE;
 			}
@@ -184,11 +187,21 @@ final class HappyPathPolicy
 			{
 				return HappyKind.COOK;
 			}
+			// Infernal: already cooked through 8 — keep fishing toward 16 (handled below).
 		}
 
 		if (snap.getRawFish() > 0 && shouldCook(snap))
 		{
 			return HappyKind.COOK;
+		}
+
+		if (snap.getTotalFish() >= RotationConstants.FIRST_BATCH_TARGET && !snap.isDump16Done())
+		{
+			if (snap.getRawFish() > 0)
+			{
+				return HappyKind.COOK;
+			}
+			return HappyKind.DEPOSIT_KEEP3;
 		}
 
 		if (snap.getTotalFish() >= RotationConstants.INVENTORY_TARGET)
@@ -197,15 +210,11 @@ final class HappyPathPolicy
 			{
 				return HappyKind.COOK;
 			}
-			if (!snap.isDump16Done())
-			{
-				return HappyKind.DEPOSIT_KEEP3;
-			}
 			return HappyKind.DEPOSIT;
 		}
 
 		if (snap.isDoubleSpotUp() && snap.getEmptySlots() > 0
-			&& snap.getTotalFish() < RotationConstants.INVENTORY_TARGET)
+			&& snap.getTotalFish() < fishTarget(snap))
 		{
 			return HappyKind.FISH_DOUBLE;
 		}
@@ -255,12 +264,13 @@ final class HappyPathPolicy
 		{
 			return true;
 		}
-		if (snap.getTotalFish() >= RotationConstants.INVENTORY_TARGET)
+		int target = fishTarget(snap);
+		if (snap.getTotalFish() >= target)
 		{
 			return true;
 		}
 		if (snap.isDoubleSpotUp() && snap.getEmptySlots() > 0
-			&& snap.getTotalFish() < RotationConstants.INVENTORY_TARGET)
+			&& snap.getTotalFish() < target)
 		{
 			return false;
 		}
@@ -281,7 +291,7 @@ final class HappyPathPolicy
 		{
 			return false;
 		}
-		// A finished deposit sends us to the pool even if an over-fished remainder is still held.
+		// A finished deposit-all sends us to the pool even if an over-fished remainder is still held.
 		if (snap.isNeedsSpirit())
 		{
 			return true;
@@ -290,8 +300,14 @@ final class HappyPathPolicy
 		{
 			return false;
 		}
+		// First dump keeps 0 fish — do not chase the pool until fires are handled and energy
+		// has actually collapsed (post-19 dump). needsSpirit covers the normal happy path.
+		if (!snap.isDouseDone())
+		{
+			return false;
+		}
 		int energy = snap.getEnergy();
-		return energy >= 0 && energy < RotationConstants.ENERGY_FULL;
+		return energy >= 0 && energy <= RotationConstants.ENERGY_SPIRIT;
 	}
 
 	private static boolean needsDouse(GameSnapshot snap)
@@ -313,13 +329,19 @@ final class HappyPathPolicy
 			return false;
 		}
 		int keep = Math.max(RotationConstants.FIRST_DUMP_KEEP, snap.getDepositKeep3StopAt());
-		return snap.getDumpableFish() <= keep && snap.getDumpableFish() > 0;
+		// First dump keeps 0 fish — douse once with an empty fish inventory.
+		// douseDone (set when second-batch fishing starts) prevents later empty-inv fire trips.
+		if (keep <= 0)
+		{
+			return snap.getDumpableFish() == 0;
+		}
+		return snap.getDumpableFish() > 0 && snap.getDumpableFish() <= keep;
 	}
 
 	private static boolean shouldDepositKeep3(GameSnapshot snap)
 	{
 		return !snap.isDump16Done()
-			&& snap.getDumpableFish() >= RotationConstants.INVENTORY_TARGET
+			&& snap.getDumpableFish() >= RotationConstants.FIRST_BATCH_TARGET
 			&& snap.getRawFish() == 0;
 	}
 
@@ -332,14 +354,16 @@ final class HappyPathPolicy
 
 	static int fishTarget(GameSnapshot snap)
 	{
-		if (!snap.isDump16Done() && !snap.isFirstCookDone())
+		if (snap.isDump16Done())
 		{
-			if (snap.getDumpableFish() >= RotationConstants.FIRST_COOK_AT && snap.getRawFish() == 0)
-			{
-				return RotationConstants.INVENTORY_TARGET;
-			}
+			return RotationConstants.INVENTORY_TARGET;
+		}
+		if (!snap.isFirstCookDone()
+			&& snap.getTotalFish() < RotationConstants.FIRST_COOK_AT)
+		{
 			return RotationConstants.FIRST_COOK_AT;
 		}
-		return RotationConstants.INVENTORY_TARGET;
+		// Cooked (Infernal) counts the same as raw toward the first crate load.
+		return RotationConstants.FIRST_BATCH_TARGET;
 	}
 }

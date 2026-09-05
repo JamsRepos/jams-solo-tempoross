@@ -8,9 +8,11 @@ import net.runelite.api.coords.WorldPoint;
 final class RotationConstants
 {
 	static final int FIRST_COOK_AT = 8;
+	/** First crate load: catch 16, deposit all 16 (reach the ship before fires). */
+	static final int FIRST_BATCH_TARGET = 16;
 	static final int INVENTORY_TARGET = 19;
-	static final int FIRST_DUMP_KEEP = 3;
-	static final int FIRST_DEPOSIT_COUNT = INVENTORY_TARGET - FIRST_DUMP_KEEP;
+	static final int FIRST_DUMP_KEEP = 0;
+	static final int FIRST_DEPOSIT_COUNT = FIRST_BATCH_TARGET - FIRST_DUMP_KEEP;
 	static final int BUCKETS_NEEDED = 4;
 	static final int INTENSITY_EMERGENCY = 90;
 	static final int ENERGY_SPIRIT = 0;

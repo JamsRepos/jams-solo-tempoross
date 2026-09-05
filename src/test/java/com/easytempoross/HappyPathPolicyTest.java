@@ -85,6 +85,38 @@ public class HappyPathPolicyTest
 	}
 
 	@Test
+	public void sixteenRawCooksEvenIfDoubleIsUp()
+	{
+		GameSnapshot snap = inGame()
+			.rawFish(16)
+			.doubleSpotUp(true)
+			.emptySlots(5)
+			.build();
+		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(snap));
+	}
+
+	@Test
+	public void sixteenCookedDepositsEvenIfDoubleIsUp()
+	{
+		GameSnapshot snap = inGame()
+			.cookedFish(16)
+			.doubleSpotUp(true)
+			.emptySlots(5)
+			.build();
+		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.decide(snap));
+	}
+
+	@Test
+	public void sixteenCookedDepositsWithoutFirstCookFlag()
+	{
+		GameSnapshot snap = inGame()
+			.cookedFish(16)
+			.firstCookDone(false)
+			.build();
+		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.decide(snap));
+	}
+
+	@Test
 	public void fiveRawIsNotWorthTheShrineTrip()
 	{
 		GameSnapshot snap = inGame()
@@ -126,7 +158,7 @@ public class HappyPathPolicyTest
 	}
 
 	@Test
-	public void capsFishingAtNineteenWithExtraInventorySpace()
+	public void capsFishingAtSixteenOnFirstBatch()
 	{
 		GameSnapshot snap = inGame()
 			.firstCookDone(true)
@@ -137,8 +169,32 @@ public class HappyPathPolicyTest
 
 		GameSnapshot atCap = inGame()
 			.firstCookDone(true)
+			.rawFish(16)
+			.emptySlots(23)
+			.build();
+		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(atCap));
+	}
+
+	@Test
+	public void capsFishingAtNineteenAfterFirstDump()
+	{
+		GameSnapshot snap = inGame()
+			.dump16Done(true)
+			.douseDone(true)
+			.firstCookDone(true)
+			.rawFish(15)
+			.emptySlots(23)
+			.energy(40)
+			.build();
+		assertEquals(HappyKind.FISH, HappyPathPolicy.decide(snap));
+
+		GameSnapshot atCap = inGame()
+			.dump16Done(true)
+			.douseDone(true)
+			.firstCookDone(true)
 			.rawFish(19)
 			.emptySlots(23)
+			.energy(40)
 			.build();
 		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(atCap));
 	}
@@ -147,16 +203,16 @@ public class HappyPathPolicyTest
 	public void depositSixteenOnlyFromFirstBatch()
 	{
 		GameSnapshot snap = inGame()
-			.cookedFish(19)
+			.cookedFish(16)
 			.depositingKeep3(true)
-			.depositKeep3StopAt(3)
+			.depositKeep3StopAt(0)
 			.build();
 		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.decide(snap));
 
 		GameSnapshot done = inGame()
-			.cookedFish(3)
+			.cookedFish(0)
 			.depositingKeep3(false)
-			.depositKeep3StopAt(3)
+			.depositKeep3StopAt(0)
 			.dump16Done(true)
 			.douseDone(false)
 			.nearbyFires(2)
@@ -168,10 +224,10 @@ public class HappyPathPolicyTest
 	public void midDepositKeepsDepositEvenWithRawFish()
 	{
 		GameSnapshot keep3 = inGame()
-			.cookedFish(15)
+			.cookedFish(12)
 			.rawFish(4)
 			.depositingKeep3(true)
-			.depositKeep3StopAt(3)
+			.depositKeep3StopAt(0)
 			.build();
 		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.decide(keep3));
 
@@ -213,10 +269,10 @@ public class HappyPathPolicyTest
 	}
 
 	@Test
-	public void dumpSixteenKeepThree()
+	public void dumpSixteenOnFirstBatch()
 	{
 		GameSnapshot snap = inGame()
-			.cookedFish(19)
+			.cookedFish(16)
 			.energy(100)
 			.dump16Done(false)
 			.build();
@@ -227,10 +283,11 @@ public class HappyPathPolicyTest
 	public void staysOnDepositAfterOneFish()
 	{
 		GameSnapshot snap = inGame()
-			.cookedFish(18)
+			.cookedFish(15)
 			.energy(99)
 			.dump16Done(false)
 			.depositingKeep3(true)
+			.depositKeep3StopAt(0)
 			.build();
 		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.decide(snap));
 	}
@@ -486,7 +543,7 @@ public class HappyPathPolicyTest
 	{
 		GameSnapshot snap = inGame()
 			.dump16Done(true)
-			.cookedFish(3)
+			.cookedFish(0)
 			.nearbyFires(3)
 			.waterBuckets(4)
 			.energy(40)
@@ -513,9 +570,11 @@ public class HappyPathPolicyTest
 	{
 		GameSnapshot snap = inGame()
 			.dump16Done(true)
+			.douseDone(true)
 			.cookedFish(0)
 			.nearbyFires(4)
 			.energy(8)
+			.needsSpirit(true)
 			.build();
 		assertEquals(HappyKind.SPIRIT, HappyPathPolicy.decide(snap));
 	}
@@ -536,7 +595,7 @@ public class HappyPathPolicyTest
 	{
 		GameSnapshot snap = inGame()
 			.firstCookDone(true)
-			.rawFish(19)
+			.rawFish(16)
 			.emptySlots(0)
 			.build();
 		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(snap));
@@ -544,12 +603,50 @@ public class HappyPathPolicyTest
 	}
 
 	@Test
+	public void fishStopsAtSixteenBeforeFirstDump()
+	{
+		GameSnapshot snap = inGame()
+			.firstCookDone(true)
+			.cookedFish(8)
+			.rawFish(7)
+			.emptySlots(10)
+			.build();
+		assertEquals(HappyKind.FISH, HappyPathPolicy.decide(snap));
+
+		GameSnapshot atSixteen = inGame()
+			.firstCookDone(true)
+			.cookedFish(8)
+			.rawFish(8)
+			.emptySlots(10)
+			.build();
+		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(atSixteen));
+	}
+
+	@Test
+	public void depositsSixteenKeepZeroThenDouses()
+	{
+		GameSnapshot snap = inGame()
+			.firstCookDone(true)
+			.cookedFish(16)
+			.build();
+		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.decide(snap));
+
+		GameSnapshot done = inGame()
+			.dump16Done(true)
+			.cookedFish(0)
+			.depositKeep3StopAt(0)
+			.nearbyFires(2)
+			.build();
+		assertEquals(HappyKind.DOUSE, HappyPathPolicy.decide(done));
+	}
+
+	@Test
 	public void peekDepositKeep3GoesToDouse()
 	{
 		GameSnapshot snap = inGame()
-			.cookedFish(19)
+			.cookedFish(16)
 			.depositingKeep3(true)
-			.depositKeep3StopAt(3)
+			.depositKeep3StopAt(0)
 			.nearbyFires(2)
 			.build();
 		assertEquals(HappyKind.DEPOSIT_KEEP3, HappyPathPolicy.decide(snap));

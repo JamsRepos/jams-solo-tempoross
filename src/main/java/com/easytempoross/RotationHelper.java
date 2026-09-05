@@ -59,6 +59,9 @@ public class RotationHelper
 	private int lastDepositsLeft;
 	private RotationStep lastChimeStep = RotationStep.IDLE;
 	private boolean lastDoubleFishWanted;
+	private boolean lastDepositFireEvade;
+	@Getter
+	private boolean evadingDepositFire;
 	private boolean needsSpirit;
 	private boolean sawSpiritPool;
 	private boolean sawSpiritHarpoon;
@@ -112,6 +115,8 @@ public class RotationHelper
 		lastDepositsLeft = 0;
 		lastChimeStep = RotationStep.IDLE;
 		lastDoubleFishWanted = false;
+		lastDepositFireEvade = false;
+		evadingDepositFire = false;
 		needsSpirit = false;
 		sawSpiritPool = false;
 		sawSpiritHarpoon = false;
@@ -265,6 +270,8 @@ public class RotationHelper
 			shortestPathBridge.clear();
 			lastChimeStep = RotationStep.IDLE;
 			lastDoubleFishWanted = false;
+			lastDepositFireEvade = false;
+			evadingDepositFire = false;
 			return;
 		}
 
@@ -285,8 +292,9 @@ public class RotationHelper
 		}
 
 		ClickTarget target = targetFor(step, loc);
-		if ((step == RotationStep.DEPOSIT || step == RotationStep.DEPOSIT_KEEP3)
-			&& shouldEvadeDepositFire(loc))
+		boolean evadeFire = (step == RotationStep.DEPOSIT || step == RotationStep.DEPOSIT_KEEP3)
+			&& shouldEvadeDepositFire(loc);
+		if (evadeFire)
 		{
 			detail = "Step aside — fire on the crate tile";
 		}
@@ -344,6 +352,7 @@ public class RotationHelper
 			upcoming.getTile(),
 			upcomingColor);
 
+		updateDepositFireAlert(evadeFire);
 		updateChimes();
 	}
 
@@ -389,6 +398,22 @@ public class RotationHelper
 		lastDoubleFishWanted = doubleWanted;
 	}
 
+	private void updateDepositFireAlert(boolean evadeNow)
+	{
+		evadingDepositFire = evadeNow;
+		if (shouldPlayDepositFireAlert(config.depositFireChime(), evadeNow, lastDepositFireEvade))
+		{
+			playPluginSound(config.depositFireSound());
+		}
+		lastDepositFireEvade = evadeNow;
+	}
+
+	/** Rising edge: play once when a deposit-fire evade starts. */
+	static boolean shouldPlayDepositFireAlert(boolean chimeEnabled, boolean evadeNow, boolean evadeWas)
+	{
+		return chimeEnabled && evadeNow && !evadeWas;
+	}
+
 	/**
 	 * playSoundEffect only honours the volume argument when game SFX are muted; otherwise it uses
 	 * Preferences. Temporarily set Preferences to our volume so the Sounds slider actually works.
@@ -430,6 +455,8 @@ public class RotationHelper
 		lastDepositsLeft = 0;
 		lastChimeStep = RotationStep.IDLE;
 		lastDoubleFishWanted = false;
+		lastDepositFireEvade = false;
+		evadingDepositFire = false;
 		needsSpirit = false;
 		sawSpiritPool = false;
 		sawSpiritHarpoon = false;
@@ -603,7 +630,7 @@ public class RotationHelper
 				dump16Done = true;
 			}
 		}
-		else if (!dump16Done && dumpable >= RotationConstants.INVENTORY_TARGET && raw == 0)
+		else if (!dump16Done && dumpable >= RotationConstants.FIRST_BATCH_TARGET && raw == 0)
 		{
 			depositingKeep3 = true;
 			depositKeep3StopAt = Math.max(
@@ -629,7 +656,8 @@ public class RotationHelper
 
 	private void updateCookFlag(InventorySnapshot inv)
 	{
-		if (inv.getDumpableFish() >= RotationConstants.FIRST_COOK_AT && inv.getRawFish() == 0)
+		// Infernal auto-cook counts: any 8 dumpable fish with no raw left finishes the first cook.
+		if (inv.getTotalFish() >= RotationConstants.FIRST_COOK_AT && inv.getRawFish() == 0)
 		{
 			firstCookDone = true;
 		}
@@ -641,12 +669,16 @@ public class RotationHelper
 		{
 			return;
 		}
-		// Only track completion while we are actually in the douse window, otherwise a momentary
-		// empty fire list during the deposit or fishing legs would end the phase early.
 		int keep = Math.max(RotationConstants.FIRST_DUMP_KEEP, depositKeep3StopAt);
-		boolean douseWindow = inv.getRawFish() == 0
-			&& inv.getDumpableFish() > 0
-			&& inv.getDumpableFish() <= keep;
+		// Once the second fishing batch starts, never return to the post-first-dump douse.
+		if (inv.getRawFish() > 0)
+		{
+			douseDone = true;
+			return;
+		}
+		// Only track completion while we are actually in the douse window, otherwise a momentary
+		// empty fire list during the deposit leg would end the phase early.
+		boolean douseWindow = inv.getDumpableFish() <= keep;
 		if (!douseWindow)
 		{
 			return;
@@ -843,6 +875,22 @@ public class RotationHelper
 			return Math.min(dumpable, RotationConstants.INVENTORY_TARGET);
 		}
 		return 0;
+	}
+
+	/**
+	 * Phase-1 storm warning: intensity at emergency and the first dump is not finished yet.
+	 */
+	public boolean isStormHurry()
+	{
+		return isStormHurry(gameSnapshot);
+	}
+
+	static boolean isStormHurry(GameSnapshot snap)
+	{
+		return snap != null
+			&& snap.isInMinigame()
+			&& !snap.isDump16Done()
+			&& snap.getIntensity() >= RotationConstants.INTENSITY_EMERGENCY;
 	}
 
 	private ClickTarget targetFor(RotationStep step, WorldPoint from)
@@ -1121,7 +1169,9 @@ public class RotationHelper
 	private static String detailForHappy(HappyKind kind, GameSnapshot snap)
 	{
 		int have = snap.getTotalFish();
-		int need = RotationConstants.INVENTORY_TARGET;
+		int need = snap.isDump16Done()
+			? RotationConstants.INVENTORY_TARGET
+			: RotationConstants.FIRST_BATCH_TARGET;
 		switch (kind)
 		{
 			case PREP_HARPOON:
@@ -1140,19 +1190,22 @@ public class RotationHelper
 			case LEAVE_SHIP:
 				return "Walk off the ship onto the island";
 			case FISH:
-				if (!snap.isDump16Done() && !snap.isFirstCookDone())
+				if (!snap.isDump16Done() && !snap.isFirstCookDone()
+					&& snap.getTotalFish() < RotationConstants.FIRST_COOK_AT)
 				{
 					return "Fish until 8, then cook (" + snap.getTotalFish() + "/8)";
 				}
 				return "Fish until " + need + " (" + have + "/" + need + ")";
 			case FISH_DOUBLE:
-				if (!snap.isDump16Done() && !snap.isFirstCookDone())
+				if (!snap.isDump16Done() && !snap.isFirstCookDone()
+					&& snap.getTotalFish() < RotationConstants.FIRST_COOK_AT)
 				{
-					if (snap.getTotalFish() >= RotationConstants.FIRST_COOK_AT)
-					{
-						return "Double spot first, then cook (" + snap.getTotalFish() + "/8)";
-					}
 					return "Fish until 8 (" + snap.getTotalFish() + "/8)";
+				}
+				if (!snap.isDump16Done() && !snap.isFirstCookDone()
+					&& snap.getTotalFish() >= RotationConstants.FIRST_COOK_AT)
+				{
+					return "Double spot first, then cook (" + have + "/" + need + ")";
 				}
 				return "Click the double spot (" + have + "/" + need + ")";
 			case COOK:
@@ -1160,14 +1213,13 @@ public class RotationHelper
 				{
 					return "Cook 8 at the shrine";
 				}
-				if (snap.getTotalFish() >= RotationConstants.INVENTORY_TARGET)
+				if (snap.getTotalFish() >= need)
 				{
 					return "Cook before deposit (" + snap.getRawFish() + " raw)";
 				}
 				return "Cook at the shrine (" + snap.getRawFish() + " raw)";
 			case DEPOSIT_KEEP3:
-				return "Deposit exactly " + RotationConstants.FIRST_DEPOSIT_COUNT + " fish — keep "
-					+ Math.max(RotationConstants.FIRST_DUMP_KEEP, snap.getDepositKeep3StopAt());
+				return "Deposit exactly " + RotationConstants.FIRST_DEPOSIT_COUNT + " fish";
 			case DEPOSIT:
 				return "Deposit exactly " + RotationConstants.INVENTORY_TARGET + " fish";
 			case DOUSE:

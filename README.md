@@ -10,6 +10,8 @@ This plugin does not click for you.
 - **Path** — a line on the floor and/or minimap to where you are going. Fires are pathed around. Turn either line off in settings if you prefer.
 - **Status panel** — the current step, fish counts, buckets, and (optionally) a compact energy / storm / points readout instead of the default game HUD.
 - **Deposit countdown** — a large on-screen count of crate deposits left, with optional audio chimes at 3, 2, 1, and a stop at 0. The stop can also play when other AFK steps finish.
+- **Storm hurry** — before the first dump, if storm intensity hits 90%, the Storm bar flashes and a large HURRY overlay warns you to dump before the game ends.
+- **Deposit fire alert** — if a fire lands on the crate tile while you are depositing, a chime and screen tint push you onto the safe stand tile.
 - **Recover:** — if you fall off the rotation, the panel says so and points you back.
 
 After an update, chat shows what changed the first time you log in.
@@ -19,9 +21,9 @@ After an update, chat shows what changed the first time you log in.
 Solo-start, then:
 
 1. Fill empty buckets at the ship pump and run north.
-2. Fish until 8, cook, click the double spot when it appears, fish until 19, cook all.
+2. Fish until 8, cook, click the double spot when it appears, fish until **16**, cook all.
 3. Tether the totem when a colossal wave closes in.
-4. Deposit **16** cooked fish (keep 3).
+4. Deposit **16** cooked fish (dump the whole first batch).
 5. Douse 3–4 fires.
 6. Fish 16 more (doubles first), cook, deposit all 19.
 7. Harpoon the spirit pool until energy is back to 100%.
@@ -52,8 +54,9 @@ Everything is on by default except the idle screen tint.
 | Countdown chime | Audio at 3, 2, 1 deposits left, then a bell at 0 |
 | Final chime | All Actions also bells when fishing, cooking, filling, or the spirit pool finishes. Deposit Only keeps the bell on the crate countdown |
 | Double-fish chime | Soft cue when the helper wants the double spot and inventory still has space |
+| Deposit fire alert | Sound when a fire forces you off the crate tile during a deposit (screen also tints until you move) |
 | Sound volume | Plugin chime volume (independent of the game's sound-effect slider) |
-| Advanced | Pick which game sound plays for countdown ticks, the stop chime, and the double-fish cue |
+| Advanced | Pick which game sound plays for countdown ticks, the stop chime, the double-fish cue, and the deposit fire alert |
 | Idle reminder | How long you can stand still before a warning |
 | Idle screen tint | Optional faint tint when idle |
 

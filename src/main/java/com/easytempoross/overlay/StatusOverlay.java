@@ -29,12 +29,14 @@ public class StatusOverlay extends OverlayPanel
 	private static final Color LABEL = Color.WHITE;
 	private static final Color DETAIL = new Color(170, 170, 170);
 	private static final Color WARN = new Color(255, 168, 76);
+	private static final Color STORM_FLASH = new Color(255, 60, 50);
 	private static final Color ENERGY = new Color(0, 200, 220);
 	private static final Color ESSENCE = new Color(82, 161, 82);
 	private static final Color STORM = new Color(220, 220, 220);
 	private static final Color BAR_BACK = new Color(40, 40, 40, 180);
 	private static final Dimension BAR_SIZE = new Dimension(150, 14);
 	private static final Dimension SIZE = new Dimension(166, 0);
+	private static final long STORM_FLASH_MS = 400L;
 
 	private final EasyTemporossConfig config;
 	private final RotationHelper rotationHelper;
@@ -129,7 +131,7 @@ public class StatusOverlay extends OverlayPanel
 	{
 		addBar("Energy", game.getEnergy(), ENERGY);
 		addBar("Essence", game.getEssence(), ESSENCE);
-		Color stormFill = game.getIntensity() >= 90 ? WARN : STORM;
+		Color stormFill = stormBarColor(game.getIntensity(), rotationHelper.isStormHurry());
 		addBar("Storm", game.getIntensity(), stormFill);
 		if (game.getPoints() >= 0)
 		{
@@ -153,6 +155,16 @@ public class StatusOverlay extends OverlayPanel
 		bar.setFontColor(LABEL);
 		bar.setPreferredSize(BAR_SIZE);
 		panelComponent.getChildren().add(bar);
+	}
+
+	private static Color stormBarColor(int intensity, boolean hurry)
+	{
+		if (!hurry || intensity < 90)
+		{
+			return intensity >= 90 ? WARN : STORM;
+		}
+		boolean flash = (System.currentTimeMillis() / STORM_FLASH_MS) % 2 == 0;
+		return flash ? STORM_FLASH : WARN;
 	}
 
 	private static LineComponent spacer()
