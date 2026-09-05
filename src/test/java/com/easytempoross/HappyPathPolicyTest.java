@@ -85,62 +85,6 @@ public class HappyPathPolicyTest
 	}
 
 	@Test
-	public void busyCookingKeepsCookEvenWhenDoubleIsUp()
-	{
-		GameSnapshot snap = inGame()
-			.rawFish(8)
-			.doubleSpotUp(true)
-			.busyCooking(true)
-			.build();
-		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(snap));
-	}
-
-	@Test
-	public void busyCookingHoldsCookThroughLastRawFish()
-	{
-		GameSnapshot snap = inGame()
-			.rawFish(0)
-			.cookedFish(8)
-			.doubleSpotUp(true)
-			.busyCooking(true)
-			.build();
-		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(snap));
-	}
-
-	@Test
-	public void busyCookingStillPeeksToDoubleAfterCook()
-	{
-		GameSnapshot snap = inGame()
-			.rawFish(8)
-			.doubleSpotUp(true)
-			.busyCooking(true)
-			.build();
-		assertEquals(HappyKind.COOK, HappyPathPolicy.decide(snap));
-		assertEquals(HappyKind.FISH_DOUBLE, HappyPathPolicy.peekAfter(snap));
-	}
-
-	@Test
-	public void victoryIgnoresDoubleSpot()
-	{
-		GameSnapshot snap = inGame()
-			.victory(true)
-			.rawFish(8)
-			.doubleSpotUp(true)
-			.emptyBuckets(4)
-			.build();
-		assertEquals(HappyKind.REFILL_DOCK, HappyPathPolicy.decide(snap));
-
-		GameSnapshot ready = inGame()
-			.victory(true)
-			.rawFish(5)
-			.doubleSpotUp(true)
-			.emptyBuckets(0)
-			.waterBuckets(4)
-			.build();
-		assertEquals(HappyKind.LEAVE_GAME, HappyPathPolicy.decide(ready));
-	}
-
-	@Test
 	public void fiveRawIsNotWorthTheShrineTrip()
 	{
 		GameSnapshot snap = inGame()

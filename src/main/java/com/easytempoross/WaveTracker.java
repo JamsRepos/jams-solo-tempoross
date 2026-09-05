@@ -14,8 +14,6 @@ public class WaveTracker
 	private boolean incoming;
 	@Getter
 	private boolean tethered;
-	@Getter
-	private boolean victory;
 
 	@Inject
 	WaveTracker()
@@ -26,7 +24,6 @@ public class WaveTracker
 	{
 		incoming = false;
 		tethered = false;
-		victory = false;
 	}
 
 	public void setTethered(boolean tethered)
@@ -49,12 +46,6 @@ public class WaveTracker
 		if (message.contains("the rope keeps you securely") || message.contains("the wave slams into you"))
 		{
 			incoming = false;
-			return;
-		}
-		if (message.contains("The skies clear as Tempoross retreats")
-			|| message.contains("ferry you back"))
-		{
-			victory = true;
 		}
 	}
 }
