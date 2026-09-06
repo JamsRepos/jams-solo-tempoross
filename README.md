@@ -14,8 +14,6 @@ This plugin does not click for you.
 - **Deposit fire alert** — if a fire lands on the crate tile while you are depositing, a chime and screen tint push you onto the safe stand tile.
 - **Recover:** — if you fall off the rotation, the panel says so and points you back.
 
-After an update, chat shows what changed the first time you log in.
-
 ## The 16/19/19 rotation
 
 Solo-start, then:
