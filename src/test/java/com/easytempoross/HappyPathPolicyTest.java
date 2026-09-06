@@ -14,6 +14,7 @@ public class HappyPathPolicyTest
 			.hasHammer(true)
 			.hasRopeOrOutfit(true)
 			.hasHarpoon(true)
+			.requireHarpoon(true)
 			.waterBuckets(4)
 			.energy(-1)
 			.intensity(-1)
@@ -29,11 +30,44 @@ public class HappyPathPolicyTest
 			.hasHammer(false)
 			.hasRopeOrOutfit(true)
 			.hasHarpoon(true)
+			.requireHarpoon(true)
 			.waterBuckets(4)
 			.energy(-1)
 			.intensity(-1)
 			.build();
 		assertEquals(HappyKind.SOLO_START, HappyPathPolicy.decide(snap));
+	}
+
+	@Test
+	public void dockBarehandedSkipsHarpoonPrep()
+	{
+		GameSnapshot snap = GameSnapshot.builder()
+			.atUnkah(true)
+			.hasHammer(true)
+			.hasRopeOrOutfit(true)
+			.hasHarpoon(false)
+			.requireHarpoon(false)
+			.waterBuckets(4)
+			.energy(-1)
+			.intensity(-1)
+			.build();
+		assertEquals(HappyKind.SOLO_START, HappyPathPolicy.decide(snap));
+	}
+
+	@Test
+	public void dockMissingHarpoonWhenRequired()
+	{
+		GameSnapshot snap = GameSnapshot.builder()
+			.atUnkah(true)
+			.hasHammer(true)
+			.hasRopeOrOutfit(true)
+			.hasHarpoon(false)
+			.requireHarpoon(true)
+			.waterBuckets(4)
+			.energy(-1)
+			.intensity(-1)
+			.build();
+		assertEquals(HappyKind.PREP_HARPOON, HappyPathPolicy.decide(snap));
 	}
 
 	@Test
@@ -437,6 +471,7 @@ public class HappyPathPolicyTest
 			.hasHammer(true)
 			.hasRopeOrOutfit(true)
 			.hasHarpoon(true)
+			.requireHarpoon(true)
 			.emptyBuckets(4)
 			.energy(-1)
 			.intensity(-1)
@@ -702,6 +737,7 @@ public class HappyPathPolicyTest
 			.hasHammer(true)
 			.hasRopeOrOutfit(true)
 			.hasHarpoon(true)
+			.requireHarpoon(true)
 			.waterBuckets(4)
 			.emptySlots(10)
 			.energy(100)

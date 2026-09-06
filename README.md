@@ -30,7 +30,7 @@ Solo-start, then:
 
 ## What to bring
 
-- A **harpoon** (equipped or in inventory)
+- A **harpoon** (equipped or in inventory), unless you fish barehanded with **Require harpoon** turned off
 - A **rope**, or the full **Spirit Angler** outfit
 - **4 buckets** (empty or water)
 
@@ -49,6 +49,7 @@ Everything is on by default except the idle screen tint.
 | Countdown size | Text size when the countdown reaches the last 3 deposits |
 | Replace game HUD | Hide the default Tempoross bars; show energy, storm, and points in the status panel |
 | Hide fishing and cooking overlays | Hide RuneLite's fishing/cooking stat overlays during a game |
+| Require harpoon | When off, skip harpoon prep and recovery for barehanded (barbarian) fishing |
 | Countdown chime | Audio at 3, 2, 1 deposits left, then a bell at 0 |
 | Final chime | All Actions also bells when fishing, cooking, filling, or the spirit pool finishes. Deposit Only keeps the bell on the crate countdown |
 | Double-fish chime | Soft cue when the helper wants the double spot and inventory still has space |

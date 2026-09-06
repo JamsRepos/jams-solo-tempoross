@@ -115,9 +115,30 @@ public class RecoveryPolicyTest
 			.hasHammer(true)
 			.hasRopeOrOutfit(true)
 			.hasHarpoon(true)
+			.requireHarpoon(true)
 			.waterBuckets(4)
 			.energy(-1)
 			.intensity(-1)
+			.build();
+		assertEquals(RecoveryKind.NONE, RecoveryPolicy.decide(snap));
+	}
+
+	@Test
+	public void lostHarpoonRecoversWhenRequired()
+	{
+		GameSnapshot snap = inGame()
+			.hasHarpoon(false)
+			.requireHarpoon(true)
+			.build();
+		assertEquals(RecoveryKind.LOST_HARPOON, RecoveryPolicy.decide(snap));
+	}
+
+	@Test
+	public void barehandedSkipsHarpoonRecovery()
+	{
+		GameSnapshot snap = inGame()
+			.hasHarpoon(false)
+			.requireHarpoon(false)
 			.build();
 		assertEquals(RecoveryKind.NONE, RecoveryPolicy.decide(snap));
 	}
@@ -130,6 +151,7 @@ public class RecoveryPolicyTest
 			.hasHammer(true)
 			.hasRopeOrOutfit(true)
 			.hasHarpoon(true)
+			.requireHarpoon(true)
 			.waterBuckets(4)
 			.emptyBuckets(0)
 			.energy(100)
