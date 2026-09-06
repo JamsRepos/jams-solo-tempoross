@@ -226,6 +226,7 @@ public class RotationHelper
 			.hasHammer(snapshot.hasHammerTool())
 			.hasRopeOrOutfit(snapshot.hasRopeOrOutfit())
 			.hasHarpoon(snapshot.isHasHarpoon())
+			.requireHarpoon(config.requireHarpoon())
 			.emptyBuckets(snapshot.getEmptyBuckets())
 			.waterBuckets(snapshot.getWaterBuckets())
 			.rawFish(snapshot.getRawFish())

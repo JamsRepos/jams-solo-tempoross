@@ -234,7 +234,7 @@ final class HappyPathPolicy
 		{
 			return HappyKind.IDLE;
 		}
-		if (!snap.isHasHarpoon())
+		if (snap.isRequireHarpoon() && !snap.isHasHarpoon())
 		{
 			return HappyKind.PREP_HARPOON;
 		}

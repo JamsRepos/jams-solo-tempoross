@@ -17,6 +17,7 @@ public class GameSnapshot
 	boolean hasHammer;
 	boolean hasRopeOrOutfit;
 	boolean hasHarpoon;
+	boolean requireHarpoon;
 	int emptyBuckets;
 	int waterBuckets;
 	int rawFish;

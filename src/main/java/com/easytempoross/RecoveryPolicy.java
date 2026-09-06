@@ -26,7 +26,7 @@ final class RecoveryPolicy
 		{
 			return RecoveryKind.LOST_ROPE;
 		}
-		if (!snap.isHasHarpoon())
+		if (snap.isRequireHarpoon() && !snap.isHasHarpoon())
 		{
 			return RecoveryKind.LOST_HARPOON;
 		}

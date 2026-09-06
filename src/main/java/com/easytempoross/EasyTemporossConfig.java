@@ -159,6 +159,18 @@ public interface EasyTemporossConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "requireHarpoon",
+		name = "Require harpoon",
+		description = "When off, skip harpoon prep and recovery so you can fish barehanded (barbarian training)",
+		section = helperSection,
+		position = 9
+	)
+	default boolean requireHarpoon()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "depositChime",
 		name = "Countdown chime",
 		description = "Play a chime at 3, 2, and 1 deposits left, then a louder stop at 0",
