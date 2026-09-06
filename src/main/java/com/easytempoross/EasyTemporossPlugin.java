@@ -27,7 +27,6 @@ import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.events.WallObjectDespawned;
 import net.runelite.api.events.WallObjectSpawned;
 import net.runelite.api.gameval.VarbitID;
-import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -77,9 +76,6 @@ public class EasyTemporossPlugin extends Plugin
 	private WaveTracker waveTracker;
 
 	@Inject
-	private ChangelogService changelogService;
-
-	@Inject
 	private PathDisplayMigration pathDisplayMigration;
 
 	@Inject
@@ -87,9 +83,6 @@ public class EasyTemporossPlugin extends Plugin
 
 	@Inject
 	private ShortestPathBridge shortestPathBridge;
-
-	@Inject
-	private ClientThread clientThread;
 
 	@Override
 	protected void startUp()
@@ -106,7 +99,6 @@ public class EasyTemporossPlugin extends Plugin
 		overlayManager.add(stormHurryOverlay);
 		overlayManager.add(depositFireTintOverlay);
 		overlayManager.add(idleTintOverlay);
-		clientThread.invoke(changelogService::maybeAnnounce);
 		log.debug("Jam's Solo Tempoross started");
 	}
 
@@ -122,7 +114,6 @@ public class EasyTemporossPlugin extends Plugin
 		overlayManager.remove(idleTintOverlay);
 		rotationHelper.reset();
 		sceneTracker.reset();
-		changelogService.reset();
 		shortestPathBridge.clear();
 	}
 
@@ -232,7 +223,6 @@ public class EasyTemporossPlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
-		changelogService.onGameStateChanged(event);
 		if (event.getGameState() == GameState.LOADING)
 		{
 			sceneTracker.reset();

@@ -10,7 +10,6 @@ import net.runelite.client.config.Range;
 public interface EasyTemporossConfig extends Config
 {
 	String GROUP = "jams-solo-tempoross";
-	String SEEN_CHANGELOG_VERSION_KEY = "seenChangelogVersion";
 	String PATH_DISPLAY_KEY = "pathDisplay";
 	String PATH_PROVIDER_KEY = "pathProvider";
 	String CLICK_HIGHLIGHT_KEY = "clickHighlight";
@@ -291,16 +290,5 @@ public interface EasyTemporossConfig extends Config
 	default boolean idleFlash()
 	{
 		return false;
-	}
-
-	@ConfigItem(
-		keyName = SEEN_CHANGELOG_VERSION_KEY,
-		name = "Seen changelog version",
-		description = "Last Jam's Solo Tempoross version whose update notes were shown in chat.",
-		hidden = true
-	)
-	default String seenChangelogVersion()
-	{
-		return "";
 	}
 }
